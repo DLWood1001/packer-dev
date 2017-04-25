@@ -1,0 +1,5 @@
+# Ignore Build Output
+./output
+
+# Ignore Build Output - Temp
+./packer-*
