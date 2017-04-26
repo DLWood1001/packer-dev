@@ -1,0 +1,28 @@
+{
+   "builders": [
+      {
+         "type": "qemu",
+         "accelerator": "kvm",
+
+         "iso_url": "",
+         "iso_checksum": "",
+         "iso_checksum_type": "",
+
+         "headless": false,
+         "boot_command": [
+            ""
+         ],
+         "boot_wait": "10s",
+         "shutdown_command": "",
+
+         "ssh_username": "admin",
+         "ssh_password": "admin",
+         "ssh_port": "22",
+         "ssh_wait_timeout": "2min"
+
+      }
+   ],
+   "variables": {
+
+   }
+}
