@@ -1,5 +1,5 @@
 # Ignore Build Output
 output
 
-# Ignore Build Output - Temp
-packer-*
+# Ignore Packer Cache
+packer_cache
