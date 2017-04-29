@@ -30,7 +30,10 @@
    "provisioners": [
       {
          "type": "ansible",
-         "playbook_file": "./setup.yaml"
+         "playbook_file": "./provision/setup.yaml",
+         "extra_arguments": [
+            "--extra-vars", "ansible_become_pass=password"
+         ]
       }
    ],
    "post-processors": [
