@@ -1,36 +1,28 @@
 ---
 - name: Bootstrap System For Use With Ansible 
-  hosts: "{{hosts|d(host|d(''))|regex_replace(', *', ':')}}"
-  connection: "{{connection|d(conn|d('ssh'))}}"
+  hosts: all
   gather_facts: no
  
-  vars_files:
-    - vars_files/vf_default_settings.yaml
-
   vars:
-    bs_users: "{{defaults.bootstrap.users}}"
-
-    bs_super_user: "{{super_user|d(bs_users.super)}}"
-    bs_deploy_user: "{{deploy_user|d(bs_users.deploy)}}"
-
-    authorized_key: '~/.ssh/dlwood.pub'
-
-    ansible_user: "{{bs_super_user}}"
 
   pre_tasks:
-    # Connectivity Check
-    # ------------------
-    - name: Test Ping
-      ping:
+    # - name: "Create | Deploy User "
+    #     user:
+    #       name: "{{bs_deploy_user}}"
+    #       comment: "{{bs_deploy_user}}"
+    #       group: "{{bs_deploy_user}}"
+    #       groups: "{{deploy_user_sudo_group}}"
+    #       shell: /bin/bash
+    #       skeleton: /etc/skel
+    #       update_password: always
+    #       uid: 970
+    #     become: true
 
-- name: "Create | Deploy User: {{bs_deploy_user}}"
-        user:
-          name: "{{bs_deploy_user}}"
-          comment: "{{bs_deploy_user}}"
-          group: "{{bs_deploy_user}}"
-          groups: "{{deploy_user_sudo_group}}"
-          shell: /bin/bash
-          skeleton: /etc/skel
-          update_password: always
-          uid: 970
-        become: true
+    # Initialize - /etc/sudoers.d/admin
+    # -----------------------------------
+    - name: Install | Admin user sudo overrides.
+      copy:
+        src: "admin.sudoers"
+        dest: "/etc/sudoers.d/admin"
+        mode: 0400
+      become: true
