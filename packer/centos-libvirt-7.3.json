@@ -12,6 +12,10 @@
          "type": "qemu",
          "accelerator": "kvm",
          "headless": false,
+         "qemuargs": [
+            ["-smp", "{{user `cpus`}},sockets={{user `cpus`}},cores=1,threads=1"],
+            ["-m", "{{user `memory`}}M"]
+         ],
 
          "boot_command": [
             "<tab> ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos-7.3.cfg<enter>"
@@ -19,8 +23,8 @@
          "boot_wait": "10s",
          "shutdown_command": "echo 'password' | sudo -S shutdown -h now",
 
-         "ssh_username": "admin",
-         "ssh_password": "password",
+         "ssh_username": "{{user `ssh_username`}}",
+         "ssh_password": "{{user `ssh_password`}}",
          "ssh_port": "22",
          "ssh_wait_timeout": "25m",
 
@@ -32,19 +36,27 @@
          "type": "ansible",
          "playbook_file": "./provision/setup.yaml",
          "extra_arguments": [
-            "--extra-vars", "ansible_become_pass=password"
+            "--extra-vars", "ansible_become_pass={{user `sudo_password`}}"
          ]
       }
    ],
    "post-processors": [
       {
         "type": "vagrant",
-        "output": "builds/CentOS-7.3.{{.Provider}}.box"
+        "output": "builds/CentOS-7.3.{{.Provider}}.box",
+        "vagrantfile_template": "./templates/Vagrantfile"
       }
    ],
    "variables": {
       "iso_name": "CentOS-7-x86_64-DVD-1611.iso",
+
       "cpus": "4",
-      "memory": "4096"
+      "memory": "4096",
+
+      "ssh_username": "admin",
+
+      "ssh_password": "password",
+      "sudo_password": "password",
+      "root_password": "password"
    }
 }
