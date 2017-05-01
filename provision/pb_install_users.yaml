@@ -1,0 +1,65 @@
+---
+- name: Install Users
+  hosts: all
+  gather_facts: no
+ 
+  vars:
+    profiles:
+      - name: admin
+        group: admin
+        uid: 1000
+        gid: 1000
+        comment: Administrator
+        groups: wheel
+        shell: /bin/bash
+        skeleton: /etc/skel
+        password: "{{'password'|password_hash('sha512')}}"
+        public_key: "http://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant.pub"
+        vagrant: true
+
+  environment:
+    http_proxy: "{{http_proxy}}"
+
+  tasks:
+    - name: "Create | User Group"
+      group:
+        name: "{{item.group}}"
+        gid: "{{item.gid}}"
+        state: present
+      with_items: "{{profiles}}"
+      become: true
+
+    - name: "Create | User"
+      user:
+        name: "{{item.name}}"
+        uid: "{{item.uid}}"
+        comment: "{{item.comment}}"
+        group: "{{item.group}}"
+        groups: "{{item.groups}}"
+        shell: "{{item.shell}}"
+        skeleton: "{{item.skeleton}}"
+        password: "{{item.password}}"
+        state: present
+      with_items: "{{profiles}}"
+      become: true
+
+    # Initialize - /etc/sudoers.d/<username> file.
+    # --------------------------------------------
+    - name: Install | Admin user sudo overrides.
+      template:
+        src: sudoers.d.j2
+        dest: "/etc/sudoers.d/{{item.name}}"
+        mode: 0400
+      when: item.vagrant|default(false) == true
+      with_items: "{{profiles}}"
+      become: true
+
+    - name: Install | Install insecure Vagrant public key.
+      authorized_key:
+        user: "{{item.name}}"
+        state: present
+        key: "{{item.public_key}}"
+      when: item.vagrant|default(false) == true
+      with_items: "{{profiles}}"
+      become: true
+

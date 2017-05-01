@@ -1,0 +1,18 @@
+---
+- name: Bootstrap Ansible
+  hosts: all
+  gather_facts: no
+ 
+  vars:
+    bootstrap:
+      environment: "http_proxy={{http_proxy}}"
+      command: yum install -y
+      parameters: python python2-dnf libselinux-python
+
+  environment:
+    http_proxy: "{{http_proxy}}"
+
+  tasks:
+    - name: Bootstrap | Install python, python2-dnf, and libselinux-python.
+      raw: "{{bootstrap.environment}} {{bootstrap.command}} {{bootstrap.parameters}}"
+      become: true
