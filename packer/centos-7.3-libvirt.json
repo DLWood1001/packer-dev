@@ -44,7 +44,7 @@
       {
         "type": "vagrant",
         "output": "builds/{{user `name`}}.{{.Provider}}.box",
-        "vagrantfile_template": "./templates/Vagrantfile-{{.Provider}}"
+        "vagrantfile_template": "./templates/vagrantfile-libvirt"
       }
    ],
    "variables": {
