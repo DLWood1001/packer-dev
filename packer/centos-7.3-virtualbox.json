@@ -1,0 +1,70 @@
+{
+   "builders": [
+      {
+         "name": "{{user `name`}}",
+         "output_directory": "output",
+         "http_directory": "kickstart",
+
+         "iso_url": "{{user `iso_path`}}/{{user `iso_file`}}",
+         "iso_checksum_type": "{{user `iso_checksum_type`}}",
+         "iso_checksum": "{{user `iso_checksum_hash`}}",
+
+         "type": "qemu",
+         "accelerator": "kvm",
+         "headless": false,
+         "qemuargs": [
+            ["-smp", "{{user `cpus`}},sockets={{user `cpus`}},cores=1,threads=1"],
+            ["-m", "{{user `memory`}}M"]
+         ],
+
+         "boot_command": [
+            "<tab> ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `name`}}-{{user `kickstart_target`}}.cfg<enter>"
+         ],
+         "boot_wait": "10s",
+         "shutdown_command": "echo 'password' | sudo -S shutdown -h now",
+
+         "ssh_username": "{{user `ssh_username`}}",
+         "ssh_password": "{{user `ssh_password`}}",
+         "ssh_port": "22",
+         "ssh_wait_timeout": "25m",
+
+         "shutdown_command": "echo 'password' | sudo -S shutdown -h now"
+      }
+   ],
+   "provisioners": [
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/setup.yaml",
+         "extra_arguments": [
+            "--extra-vars", "ansible_become_pass={{user `sudo_password`}}"
+         ]
+      }
+   ],
+   "post-processors": [
+      {
+        "type": "vagrant",
+        "output": "builds/{{user `name`}}.{{.Provider}}.box",
+        "vagrantfile_template": "./templates/Vagrantfile-{{.Provider}}"
+      }
+   ],
+   "variables": {
+      "name": "centos-7.3",
+
+      "iso_file": "CentOS-7-x86_64-DVD-1611.iso",
+      "iso_path": "http://mirrors.kernel.org/centos/7.3.1611/isos/x86_64",
+
+      "iso_checksum_type": "sha256",
+      "iso_checksum_hash": "c455ee948e872ad2194bdddd39045b83634e8613249182b88f549bb2319d97eb",
+
+      "kickstart_target": "graphical",
+
+      "cpus": "4",
+      "memory": "4096",
+
+      "ssh_username": "admin",
+      "ssh_password": "password",
+      "sudo_password": "password",
+
+      "root_password": "password"
+   }
+}
