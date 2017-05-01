@@ -6,15 +6,19 @@
          "http_directory": "kickstart",
 
          "iso_url": "{{user `iso_path`}}/{{user `iso_file`}}",
-         "iso_checksum_type": "{{user `iso_checksum_type`}}",
-         "iso_checksum": "{{user `iso_checksum_hash`}}",
+         "iso_checksum_type": "sha256",
+         "iso_checksum": "{{user `iso_checksum_sha256_hash`}}",
 
-         "type": "qemu",
-         "accelerator": "kvm",
+         "guest_additions_url": "{{user `guest_additions_path`}}/{{user `guest_additions_file`}}",
+         "guest_additions_sha256": "{{user `guest_additions_sha256_hash`}}",
+
+         "type": "virtualbox-iso",
          "headless": false,
-         "qemuargs": [
-            ["-smp", "{{user `cpus`}},sockets={{user `cpus`}},cores=1,threads=1"],
-            ["-m", "{{user `memory`}}M"]
+         "guest_os_type": "RedHat_64",
+         "hard_drive_interface": "sata",
+         "vboxmanage": [
+            ["modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}"],
+            ["modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}"]
          ],
 
          "boot_command": [
@@ -44,7 +48,7 @@
       {
         "type": "vagrant",
         "output": "builds/{{user `name`}}.{{.Provider}}.box",
-        "vagrantfile_template": "./templates/Vagrantfile-{{.Provider}}"
+        "vagrantfile_template": "./templates/vagrantfile-virtualbox"
       }
    ],
    "variables": {
@@ -53,8 +57,12 @@
       "iso_file": "CentOS-7-x86_64-DVD-1611.iso",
       "iso_path": "http://mirrors.kernel.org/centos/7.3.1611/isos/x86_64",
 
-      "iso_checksum_type": "sha256",
-      "iso_checksum_hash": "c455ee948e872ad2194bdddd39045b83634e8613249182b88f549bb2319d97eb",
+      "iso_checksum_sha256_hash": "c455ee948e872ad2194bdddd39045b83634e8613249182b88f549bb2319d97eb",
+
+      "guest_additions_file": "VBoxGuestAdditions_5.1.21-115005.iso",
+      "guest_additions_path": "https://www.virtualbox.org/download/testcase",
+
+      "guest_additions_sha256_hash": "d348c2265b8ebae37ef3599dcbb839599093550ae1c60b0c7d471a48ecf70213",
 
       "kickstart_target": "graphical",
 
