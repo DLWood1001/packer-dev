@@ -60,13 +60,14 @@
    "post-processors": [
       {
         "type": "vagrant",
-        "output": "builds/{{user `name`}}.{{.Provider}}.box",
-        "vagrantfile_template": "./templates/vagrantfile-virtualbox"
+        "output": "builds/{{user `name`}}.{{user `provider`}}.box",
+        "vagrantfile_template": "./templates/vagrantfile-{{user `provider`}}"
       }
    ],
 
    "variables": {
       "name": "centos-7.3",
+      "provider": "virtualbox",
 
       "iso_file": "CentOS-7-x86_64-DVD-1611.iso",
       "iso_path": "http://mirrors.kernel.org/centos/7.3.1611/isos/x86_64",
