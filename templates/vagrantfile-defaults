@@ -1,0 +1,84 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby ts=2 sw=2 sts=2 et :
+
+
+# General Settings
+# ----------------
+
+# General Provider Settings
+provider_cpus = 4
+provider_memory = 4096
+
+
+# Default Vagrant Settings
+# ------------------------
+Vagrant.configure("2") do |config|
+
+  # Default Vagrant Overrides
+  # -------------------------
+  config.ssh.username = "admin"
+
+  config.vm.synced_folder ".", "/vagrant",
+     disabled: true
+
+  config.vm.synced_folder ".", "/home/admin/Development",
+     create: true,
+     disabled: false
+
+
+  # Default Provider Overrides
+  # --------------------------
+
+  # VirtualBox
+  config.vm.provider :virtualbox do |vbox_config|
+    # General Provider Settings
+    # -------------------------
+    vbox_config.cpus = provider_cpus
+    vbox_config.memory = provider_memory 
+
+    # Custom Provider Settings
+    # ------------------------
+
+    # Display Settings
+    vbox_config.customize ["modifyvm", :id, "--vram", "16"]
+  end
+
+  # Libvirt
+  config.vm.provider :libvirt do |libvirt_config|
+    # General Provider Settings
+    # -------------------------
+    libvirt_config.cpus = provider_cpus
+    libvirt_config.memory = provider_memory 
+
+    # Custom Provider Settings
+    # ------------------------
+
+    # Display Settings
+    libvirt_config.graphics_type = "spice"
+    libvirt_config.graphics_autoport = "yes"
+    libvirt_config.video_type = "qxl"
+
+    # Communication Channels
+    # Note(Dan): This allows for display reszing.
+    libvirt_config.channel :type => "spicevmc",
+                           :target_name => "com.redhat.spice.0",
+                           :target_type => "virtio"
+
+    libvirt_config.channel :type => "unix",
+                           :target_name => "org.qemu.guest_agent.0",
+                           :target_type => "virtio"
+  end
+
+  # Additional Plugin Settings
+  # --------------------------
+  if Vagrant.has_plugin?("vagrant-proxyconf")
+    config.proxy.enabled = false
+  
+    if ENV['http_proxy'] || ENV['https_proxy']
+      config.proxy.enabled = true
+  
+      config.proxy.http = ENV['http_proxy']
+      config.proxy.https = ENV['https_proxy']
+    end
+  end
+end
