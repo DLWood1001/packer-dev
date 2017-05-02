@@ -9,9 +9,6 @@
          "iso_checksum_type": "sha256",
          "iso_checksum": "{{user `iso_checksum_sha256_hash`}}",
 
-         "guest_additions_url": "{{user `guest_additions_path`}}/{{user `guest_additions_file`}}",
-         "guest_additions_sha256": "{{user `guest_additions_sha256_hash`}}",
-
          "type": "virtualbox-iso",
          "headless": "{{user `headless`}}",
          "guest_os_type": "RedHat_64",
@@ -54,6 +51,15 @@
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
+      },
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_virtualbox_guest_additions.yaml",
+         "extra_arguments": [
+            "--extra-vars", "ansible_become_pass={{user `sudo_password`}}",
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
       }
    ],
 
@@ -72,10 +78,6 @@
       "iso_file": "CentOS-7-x86_64-DVD-1611.iso",
       "iso_path": "http://mirrors.kernel.org/centos/7.3.1611/isos/x86_64",
       "iso_checksum_sha256_hash": "c455ee948e872ad2194bdddd39045b83634e8613249182b88f549bb2319d97eb",
-
-      "guest_additions_file": "VBoxGuestAdditions_5.1.21-115005.iso",
-      "guest_additions_path": "https://www.virtualbox.org/download/testcase",
-      "guest_additions_sha256_hash": "d348c2265b8ebae37ef3599dcbb839599093550ae1c60b0c7d471a48ecf70213",
 
       "kickstart_target": "graphical",
 

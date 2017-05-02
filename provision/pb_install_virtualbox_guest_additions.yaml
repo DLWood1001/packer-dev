@@ -1,0 +1,81 @@
+---
+- name: Install VirtualBox Guest Additions
+  hosts: "{{hosts|d(host|d('all'))}}"
+  gather_facts: no
+ 
+  vars:
+    version: "5.1.22"
+    vbox_version: "{{version|default('latest')}}"
+
+    vbox_iso: "VBoxGuestAdditions_{{vbox_version}}.iso"
+    vbox_base: "http://download.virtualbox.org/virtualbox/{{vbox_version}}"
+    vbox_url: "{{vbox_base}}/{{vbox_iso}}"
+
+    vbox_dependencies:
+      - binutils
+      - make
+      - perl
+      - bzip2
+      - gcc
+      - cpp
+      - "kernel-devel-{{kernel_version}}"
+      - "kernel-headers-{{kernel_version}}"
+      - glibc-devel
+      - glibc-headers
+      - libmpc
+      - mpfr
+
+  environment:
+    http_proxy: "{{http_proxy}}"
+
+  pre_tasks:
+    - name: Validate | Test connectivity to the system.
+      ping:
+
+    - name: Info | Gather facts on the system.
+      setup:
+
+  tasks:
+    - name: Get | Kernel Version Data
+      command: uname -r
+      changed_when: false
+      register: kernel_version_output
+
+    - name: Set | Kernel Version Data
+      set_fact:
+        kernel_version: "{{kernel_version_output.stdout}}"
+
+    - name: Depends
+      package:
+        name: "{{item}}"
+        state: present
+      with_items: "{{vbox_dependencies}}"
+
+    - name: Get | Download VirtualBox guest additions to the system.
+      get_url:
+        url: "{{vbox_url}}"
+        dest: "/tmp"
+
+    - name: Mount
+      mount:
+        path: /tmp/vbox
+        src: "/tmp/{{vbox_iso}}"
+        opts: loop
+        fstype: iso9660
+        state: present
+
+    - name: Install
+      command: VBoxLinuxAdditions.run --nox11
+      args:
+        chdir: /tmp/vbox
+      failed_when: false
+
+    - name: Unmount
+      mount:
+        path: /tmp/vbox
+        state: absent
+
+    - name: Cleanup
+      file:
+        path: "/tmp/{{vbox_iso}}"
+        state: absent
