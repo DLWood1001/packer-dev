@@ -11,7 +11,7 @@
 
          "type": "qemu",
          "accelerator": "kvm",
-         "headless": false,
+         "headless": "{{user `headless`}}",
          "qemuargs": [
             ["-smp", "{{user `cpus`}},sockets={{user `cpus`}},cores=1,threads=1"],
             ["-m", "{{user `memory`}}M"]
@@ -57,7 +57,7 @@
       {
         "type": "vagrant",
         "output": "builds/{{user `name`}}.{{user `provider`}}.box",
-        "vagrantfile_template": "./templates/vagrantfile-{{user `provider`}}"
+        "vagrantfile_template": "./templates/vagrantfile-defaults"
       }
    ],
 
@@ -71,9 +71,9 @@
 
       "kickstart_target": "graphical",
 
-      "headless": "true",
       "cpus": "4",
       "memory": "4096",
+      "headless": "false",
 
       "ssh_username": "root",
       "ssh_password": "password",

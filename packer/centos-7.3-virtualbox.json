@@ -13,7 +13,7 @@
          "guest_additions_sha256": "{{user `guest_additions_sha256_hash`}}",
 
          "type": "virtualbox-iso",
-         "headless": false,
+         "headless": "{{user `headless`}}",
          "guest_os_type": "RedHat_64",
          "hard_drive_interface": "sata",
          "vboxmanage": [
@@ -61,7 +61,7 @@
       {
         "type": "vagrant",
         "output": "builds/{{user `name`}}.{{user `provider`}}.box",
-        "vagrantfile_template": "./templates/vagrantfile-{{user `provider`}}"
+        "vagrantfile_template": "./templates/vagrantfile-defaults"
       }
    ],
 
@@ -79,9 +79,9 @@
 
       "kickstart_target": "graphical",
 
-      "headless": "true",
       "cpus": "4",
       "memory": "4096",
+      "headless": "false",
 
       "ssh_username": "root",
       "ssh_password": "password",
