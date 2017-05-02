@@ -1,10 +1,10 @@
 # Disable TTY Requirement for admin.
-Defaults:{{profile.name}}    !requiretty
+Defaults:{{item.name}}    !requiretty
 
 # Update secure_path to include /usr/local/bin.
 # Note (Dan): Removed the /bin and /sbin as they are symlinked on CentOS/RHEL/Fedora
-Defaults:{{profile.name}}    secure_path = /usr/local/bin:/usr/bin:/usr/sbin
+Defaults:{{item.name}}    secure_path = /usr/local/bin:/usr/bin:/usr/sbin
 
 # Disable sudo Password Requirement for admin.
-{{profile.name}} ALL=(ALL) NOPASSWD:ALL
+{{item.name}} ALL=(ALL) NOPASSWD:ALL
 
