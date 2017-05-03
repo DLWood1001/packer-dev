@@ -78,3 +78,10 @@
       file:
         path: "/tmp/{{vbox_iso}}"
         state: absent
+
+  post_tasks:
+    - name: Reboot Server
+      include: pb_reboot_server.yaml
+      with_items:
+        - 1
+        - 2
