@@ -62,13 +62,12 @@
         src: "/tmp/{{vbox_iso}}"
         opts: loop
         fstype: iso9660
-        state: present
+        state: mounted
 
     - name: Install
-      command: VBoxLinuxAdditions.run --nox11
+      command: ./VBoxLinuxAdditions.run
       args:
         chdir: /tmp/vbox
-      failed_when: false
 
     - name: Unmount
       mount:
