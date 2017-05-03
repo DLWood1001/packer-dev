@@ -31,10 +31,9 @@
 
 - name: Verify SSH Full Stack Connectivity
   local_action:
-    module: shell
-    free_form: "ssh {{ansible_user}}@{{ansible_host}} -p {{ansible_port}} 'echo success'"
+    module: "shell ssh {{ansible_user}}@{{ansible_host}} -p {{ansible_port}} 'echo success'"
   register: ssh_output
-  until: ssh_output.stdout == 'success' 
+  until: ssh_output.stdout|default('failed') == 'success' 
   retries: 10
   delay: 1
   ignore_errors: yes
