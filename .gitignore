@@ -4,3 +4,8 @@ builds
 
 # Ignore Packer Cache
 packer_cache
+
+# Ignore files from failed builds?
+build.hwm
+build.pwd
+build.pwi
