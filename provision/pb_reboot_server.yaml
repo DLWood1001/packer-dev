@@ -1,45 +1,20 @@
 ---
 - name: Reboot CentOS7
-  shell: sleep 2 && reboot
-  async: 1
+  shell: sleep 2 && systemctl reboot
+  async: 2
   poll: 0
   ignore_errors: true
 
-- name: Debug
-  debug:
-    msg: "{{ansible_port}}"
+- name: Pause
+  pause:
+    seconds: 5
 
-# - name: Wait For Service SSH to Stop
-#   local_action:
-#     module: wait_for
-#     host: "{{ansible_host}}"
-#     port: "{{ansible_port}}"
-#     state: stopped
-#     delay: 5
-#     timeout: 300
-
-- name: Wait For Service SSH to Start
+- name: Verify | Determine SSH full connectivity.
   local_action:
-    module: wait_for
-    host: "{{ansible_host}}"
-    port: "{{ansible_port}}"
-    state: started
-    delay: 5
-    timeout: 300
-    # active_connection_states:
-    #   - 'ESTABLISHED'
-
-- name: Verify SSH Full Stack Connectivity
-  local_action:
-    module: "shell ssh {{ansible_user}}@{{ansible_host}} -p {{ansible_port}} 'echo success'"
+    module: "shell sshpass -p {{reboot_password}} ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o ConnectTimeout=1 -o ConnectionAttempts=1 {{reboot_username}}@{{ansible_host}} -p {{reboot_port}} 'echo success'"
   register: ssh_output
   until: ssh_output.stdout|default('failed') == 'success' 
-  retries: 10
+  retries: 600
   delay: 1
   ignore_errors: yes
 
-- debug:
-    msg: "ssh {{ansible_user}}@{{ansible_host}} -p {{ansible_port}} 'echo success'"
-
-- debug:
-    msg: "{{ssh_output}}"
