@@ -1,0 +1,9 @@
+---
+- name: Install Local Repo
+  hosts: all
+  gather_facts: no
+ 
+  environment:
+    http_proxy: "{{http_proxy}}"
+
+  tasks:
