@@ -16,6 +16,8 @@ Vagrant.configure("2") do |config|
 
   # Default Vagrant Overrides
   # -------------------------
+  config.ssh.guest = "redhat"
+
   config.ssh.username = "admin"
 
   config.vm.synced_folder ".", "/vagrant",
