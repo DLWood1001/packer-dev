@@ -1,0 +1,6 @@
+---
+- name: Optimize SSHD
+  hosts: "{{hosts|d(host|d('all'))}}"
+  gather_facts: no
+
+  tasks:

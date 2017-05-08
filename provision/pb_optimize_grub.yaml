@@ -1,0 +1,18 @@
+---
+- name: Optimize Grub Config
+  hosts: "{{hosts|d(host|d('all'))}}"
+  gather_facts: no
+
+  tasks:
+    - name: Disable Grub Boot Timeout.
+      lineinfile:
+        path: /etc/default/grub
+        regexp: ^GRUB_TIMEOUT=[0-9]+$
+        line: GRUB_TIMEOUT=0
+        state: present
+
+    - name: Update Grug Config.
+      command: grub2-mkconfig -o /boot/grub2/grub.cfg
+
+    - name: Update Initial Ram Disk
+      command: dracut -f
