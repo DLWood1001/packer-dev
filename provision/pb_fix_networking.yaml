@@ -1,0 +1,25 @@
+---
+- name: Fix Networking Config
+  hosts: "{{hosts|d(host|d('all'))}}"
+  gather_facts: no
+
+  tasks:
+    - name: a
+      lineinfile:
+        path: /etc/sysconfig/network-scripts/ifcfg-eth0
+        regexp: ^#? *?UUID=".*?"$
+        line: UseDNS no
+        state: absent
+
+    - name: b
+      lineinfile:
+        path: /etc/sysconfig/network-scripts/ifcfg-eth0
+        regexp: ^#? *?HWADDR=".*?"$
+        state: absent
+
+    - name: c
+      lineinfile:
+        path: /etc/sysconfig/network-scripts/ifcfg-eth0
+        regexp: ^#? *?DEVICE=".*?"$
+        line: DEVICE="eth0"
+        state: present

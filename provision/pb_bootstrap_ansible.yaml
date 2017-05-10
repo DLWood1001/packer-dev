@@ -14,6 +14,3 @@
       raw: "{{bootstrap.environment}} {{bootstrap.command}} {{bootstrap.parameters}}"
       become: true
 
-    - name: Debug
-      debug:
-        msg: "{{ansible_host}} {{ansible_port}}"
