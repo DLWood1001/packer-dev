@@ -1,0 +1,24 @@
+---
+- name: Optimize SSHD Config
+  hosts: "{{hosts|d(host|d('all'))}}"
+  gather_facts: no
+
+  tasks:
+    # Note(Dan): UseDNS will try to do a reverse DNS lookup on the IP of an
+    #           incoming connection. This isn't needed right now.
+    - name: Disable DNS.
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: ^#? *?UseDNS *?(no|yes) *?$
+        line: UseDNS no
+        state: present
+
+    # Note(Dan): Sometimes GSSAPI Auth can slow down SSH authentication when
+    #            both the client and server try to figure things out.
+    - name: Disable GSSAPIAuthentication.
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: ^#? *?GSSAPIAuthentication *?(no|yes) *?$
+        line: GSSAPIAuthentication no
+        state: present
+

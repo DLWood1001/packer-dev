@@ -16,6 +16,8 @@ Vagrant.configure("2") do |config|
 
   # Default Vagrant Overrides
   # -------------------------
+  config.vm.guest = "redhat"
+
   config.ssh.username = "admin"
 
   config.vm.synced_folder ".", "/vagrant",
@@ -40,7 +42,12 @@ Vagrant.configure("2") do |config|
     # ------------------------
 
     # Display Settings
+    vbox_config.gui = true
     vbox_config.customize ["modifyvm", :id, "--vram", "16"]
+
+    # Misc Settings
+    vbox_config.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
+    vbox_config.customize ["modifyvm", :id, "--draganddrop", "hosttoguest"]
   end
 
   # Libvirt

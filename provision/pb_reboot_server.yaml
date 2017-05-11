@@ -1,17 +1,33 @@
 ---
-- name: Reboot CentOS7
-  shell: sleep 2 && systemctl reboot
-  async: 2
+- name: Reboot system.
+  shell: |
+    /usr/bin/sleep 2s
+    /usr/sbin/shutdown -r now
+  # command: systemctl reboot
+  async: 1
   poll: 0
   ignore_errors: true
+  changed_when: false
 
-- name: Pause
+- name: Settling Time
   pause:
-    seconds: 5
+    seconds: 2
 
-- name: Verify | Determine SSH full connectivity.
+# Note(Dan): Note we would normally use the normal wait_for module method
+#            however vagrant proxy forwards ssh making it difficult to
+#            determine when the port is open/closed without trying to connect
+#            to it.
+- name: Determine reboot has completed by checking SSH connectivity.
   local_action:
-    module: "shell sshpass -p {{reboot_password}} ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o ConnectTimeout=1 -o ConnectionAttempts=1 {{reboot_username}}@{{ansible_host}} -p {{reboot_port}} 'echo success'"
+    module: >-
+      shell
+      sshpass -p {{reboot_password}}
+      ssh
+      -o UserKnownHostsFile=/dev/null
+      -o StrictHostKeyChecking=no
+      -o ConnectTimeout=1
+      -o ConnectionAttempts=1
+      {{reboot_username}}@{{ansible_host}} -p {{reboot_port}} 'echo success'
   register: ssh_output
   until: ssh_output.stdout|default('failed') == 'success' 
   retries: 600

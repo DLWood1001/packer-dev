@@ -5,6 +5,7 @@
  
   vars:
     version: "5.1.22"
+    vbox_provider: "{{provider|default('')}}"
     vbox_version: "{{version|default('latest')}}"
 
     vbox_iso: "VBoxGuestAdditions_{{vbox_version}}.iso"
@@ -29,6 +30,10 @@
     http_proxy: "{{http_proxy}}"
 
   pre_tasks:
+    - name: Validate | Test if the provider is supported.
+      meta: end_play
+      when: vbox_provider != 'virtualbox'
+
     - name: Validate | Test connectivity to the system.
       ping:
 
@@ -45,18 +50,18 @@
       set_fact:
         kernel_version: "{{kernel_version_output.stdout}}"
 
-    - name: Depends
+    - name: Install | Install Dependencies.
       package:
         name: "{{item}}"
         state: present
       with_items: "{{vbox_dependencies}}"
 
-    - name: Get | Download VirtualBox guest additions to the system.
+    - name: Get | Download VirtualBox guest additions ISO to the system.
       get_url:
         url: "{{vbox_url}}"
         dest: "/tmp"
 
-    - name: Mount
+    - name: Mount | Mount VirtualBox guest additions ISO.
       mount:
         path: /tmp/vbox
         src: "/tmp/{{vbox_iso}}"
@@ -64,23 +69,25 @@
         fstype: iso9660
         state: mounted
 
-    - name: Install
+    - name: Install | Install VirtualBox guest additions ISO.
       command: ./VBoxLinuxAdditions.run
       args:
         chdir: /tmp/vbox
 
-    - name: Unmount
+    - name: Unmount | Unmount VirtualBox guest additions ISO.
       mount:
         path: /tmp/vbox
         state: absent
 
-    - name: Cleanup
+    - name: Delete | Delete VirtualBox ISO from the system.
       file:
         path: "/tmp/{{vbox_iso}}"
         state: absent
 
   post_tasks:
-    - name: Reboot Server
+    # Note(Dan): This fixes issues with the guest additions video driver not
+    #            working until after two of reboots.
+    - name: Fix | Reboot the system twice.
       include: pb_reboot_server.yaml
       with_items:
         - 1

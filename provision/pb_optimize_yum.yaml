@@ -1,0 +1,13 @@
+---
+- name: Optimize Yum Config
+  hosts: "{{hosts|d(host|d('all'))}}"
+  gather_facts: no
+
+  tasks:
+    - name: Supress Yum From Installing Multiple Kernel Copies.
+      lineinfile:
+        path: /etc/yum.conf
+        regexp: ^installonly_limit=[0-9]+$
+        line: installonly_limit=0
+        state: present
+

@@ -1,6 +1,6 @@
 ---
 - name: Bootstrap Ansible
-  hosts: all
+  hosts: "{{hosts|d(host|d('all'))}}"
   gather_facts: no
  
   vars:
@@ -14,6 +14,3 @@
       raw: "{{bootstrap.environment}} {{bootstrap.command}} {{bootstrap.parameters}}"
       become: true
 
-    - name: Debug
-      debug:
-        msg: "{{ansible_host}} {{ansible_port}}"

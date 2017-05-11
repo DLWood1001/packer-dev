@@ -1,0 +1,24 @@
+---
+- name: Install Google Chrome
+  hosts: "{{hosts|d(host|d('all'))}}"
+  gather_facts: no
+ 
+  environment:
+    http_proxy: "{{http_proxy}}"
+
+  tasks:
+    - name: Install Google Chrome Repository
+      yum_repository:
+        name: google-chrome
+        description: Google Chrome Repository
+        baseurl: "http://dl.google.com/linux/chrome/rpm/stable/$basearch"
+        gpgkey: "https://dl-ssl.google.com/linux/linux_signing_key.pub"
+        enabled: false
+        gpgcheck: true
+        state: present
+
+    - name: Install Google Chrome
+      yum:
+        name: google-chrome-stable
+        enablerepo: google_chrome
+        state: latest
