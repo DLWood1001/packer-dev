@@ -1,8 +1,8 @@
----
 - name: Reboot system.
   shell: |
     /usr/bin/sleep 2s
-    /usr/sbin/shutdown -r now
+    /usr/sbin/shutdown -r -f now
+  # /usr/bin/systemctl reboot -i
   # command: systemctl reboot
   async: 1
   poll: 0
@@ -23,16 +23,18 @@
       -o StrictHostKeyChecking=no
       -o ConnectTimeout=1
       -o ConnectionAttempts=1
-      {{reboot_username}}@{{ansible_host}} -p {{reboot_port}} 'echo success'
-  register: ssh_output
-  until: ssh_output.stdout|default('failed') != 'success' 
+      {{reboot_username}}@{{ansible_host}} -p {{reboot_port}} 'echo succeeded'
+  register: ssh_result
+  until: ssh_result|failed
   retries: 600
   delay: 1
+  failed_when: false
+  changed_when: false
   ignore_errors: yes
 
-- name: Settling Time
-  pause:
-    seconds: 2
+# - name: Settling Time
+#   pause:
+#     seconds: 2
 
 # Note(Dan): Note we would normally use the normal wait_for module method
 #            however vagrant proxy forwards ssh making it difficult to
@@ -48,10 +50,14 @@
       -o StrictHostKeyChecking=no
       -o ConnectTimeout=1
       -o ConnectionAttempts=1
-      {{reboot_username}}@{{ansible_host}} -p {{reboot_port}} 'echo success'
-  register: ssh_output
-  until: ssh_output.stdout|default('failed') == 'success' 
+      {{reboot_username}}@{{ansible_host}} -p {{reboot_port}} 'echo succeeded'
+  register: ssh_result
+  until:
+    - ssh_result|succeeded
+    - ssh_result.stdout|default('failed') == 'succeeded' 
   retries: 600
   delay: 1
+  failed_when: false
+  changed_when: false
   ignore_errors: yes
 
