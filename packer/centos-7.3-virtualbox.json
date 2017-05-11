@@ -46,6 +46,7 @@
       },
       {
          "type": "ansible",
+         "only": ["virtualbox"],
          "playbook_file": "./provision/pb_install_virtualbox_guest_additions.yaml",
          "extra_arguments": [
             "--extra-vars", "provider={{user `provider`}}",

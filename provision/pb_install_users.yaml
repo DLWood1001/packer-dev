@@ -27,7 +27,6 @@
         gid: "{{item.gid}}"
         state: present
       with_items: "{{profiles}}"
-      become: true
 
     - name: "Create | User"
       user:
@@ -41,7 +40,6 @@
         password: "{{item.password}}"
         state: present
       with_items: "{{profiles}}"
-      become: true
 
     # Initialize - /etc/sudoers.d/<username> file.
     # --------------------------------------------
@@ -52,7 +50,6 @@
         mode: 0400
       when: item.vagrant|default(false) == true
       with_items: "{{profiles}}"
-      become: true
 
     - name: Install | Install insecure Vagrant public key.
       authorized_key:
@@ -61,5 +58,4 @@
         key: "{{item.public_key}}"
       when: item.vagrant|default(false) == true
       with_items: "{{profiles}}"
-      become: true
 
