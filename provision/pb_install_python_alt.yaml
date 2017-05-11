@@ -1,0 +1,151 @@
+---
+- name: Build & Install Python 
+  hosts: "{{hosts|d(host|d('all'))}}"
+  # connection: paramiko
+  gather_facts: no
+  vars:
+    py_ver: "{{version|default('2.7.11')}}"
+   
+    py_dependencies:
+      - '@Development Tools'
+      - 'zlib-devel'
+      - 'bzip2-devel'
+      - 'openssl-devel'
+      - 'ncurses-devel'
+      - 'sqlite-devel'
+
+    # Note (Dan): Don't edit variables below.
+    py_ver_regex: "^([0-9]+)\\.([0-9]+)\\.([0-9]+)$"
+
+    py_major: "{{py_ver|regex_replace(py_ver_regex, '\\1')}}"
+    py_minor: "{{py_ver|regex_replace(py_ver_regex, '\\2')}}"
+    py_patch: "{{py_ver|regex_replace(py_ver_regex, '\\3')}}"
+
+    py_family: "{{py_major}}.{{py_minor}}"
+
+    py_url: "https://www.python.org/ftp/python"
+
+    py_install_dir: "/usr/local/python{{py_ver}}"
+    py_link_dir: "/usr/local/bin"
+
+  environment:
+    http_proxy: "{{http_proxy}}"
+
+  tasks:
+    # Build & Install Python
+    # ----------------------
+    - name: Install Required Core Dependencies
+      yum:
+        name: "{{item}}"
+        state: present
+      with_items: "{{py_dependencies}}"
+
+    - name: Download Python Source Code
+      get_url:
+        url: "{{py_url}}/{{py_ver}}/Python-{{py_ver}}.tar.xz"
+        dest: "/tmp/Python-{{py_ver}}.tar.xz"
+        validate_certs: no
+
+    - name: Extract Python Source Code
+      unarchive:
+        src: "/tmp/Python-{{py_ver}}.tar.xz"
+        dest: "/tmp"
+        remote_src: yes
+        creates: "/tmp/Python-{{py_ver}}/configure"
+
+    - name: Run Python Configure Script
+      command: "./configure --prefix={{py_install_dir}}"
+      args:
+        chdir: "/tmp/Python-{{py_ver}}"
+        creates: "Makefile"
+
+    - name: "Check: Do we need to run 'make'?"
+      stat:
+        path: "/tmp/Python-{{py_ver}}/python"
+      register: make_check
+
+    - name: Run Python Make
+      make:
+        # Note (Dan): Relative paths broken/not implimented with make module.
+        # chdir: "~/Build/Python-{{py_ver}}"
+        chdir: "/tmp/Python-{{py_ver}}"
+      when: make_check.stat.exists == False
+
+    - name: "Check: Do we need to run 'make altinstall'?"
+      stat:
+        path: "{{py_install_dir}}/bin/python{{py_family}}"
+      register: make_check
+
+    - name: Run Python Make Alt-Install
+      make:
+        # Note (Dan): Relative paths broken/not implimented with make module.
+        # chdir: "~/Build/Python-{{py_ver}}"
+        chdir: "/tmp/Python-{{py_ver}}"
+        target: altinstall
+      when: make_check.stat.exists == False
+
+
+
+    # Install Python: easy_install
+    # ----------------------------
+    - name: Create Python easy_install Directory
+      file:
+        path: "/tmp/ez_setup"
+        state: directory
+
+    - name: Download Python easy_install Bootstrap
+      get_url:
+        url: "https://bootstrap.pypa.io/ez_setup.py"
+        dest: "/tmp/ez_setup/ez_setup.py"
+
+    - name: Install Python easy_install
+      shell: "{{py_install_dir}}/bin/python{{py_family}} /tmp/ez_setup/ez_setup.py"
+      args:
+        executable: /bin/bash
+        creates: "{{py_install_dir}}/bin/easy_install"
+
+
+
+    # Install Python: pip 
+    # -------------------
+    - name: "Check: Do we need to install python pip?"
+      stat:
+        path: "{{py_install_dir}}/bin/pip"
+      register: pip_check 
+
+    - name: Install Python pip Via easy_install
+      easy_install:
+        name: pip
+        state: latest
+        executable: "{{py_install_dir}}/bin/easy_install"
+      when: pip_check.stat.exists == False
+    
+
+
+    # Install Python: virtualenv
+    # --------------------------
+    - name: Install Python virtualenv Via pip
+      pip:
+        name: virtualenv
+        state: latest
+        executable: "{{py_install_dir}}/bin/pip"
+
+
+
+    # Install Convenience Symbolic Links
+    # ----------------------------------
+    - name: Create Python Symbolic Links
+      file:
+        src: "{{py_install_dir}}/bin/{{item.src}}"
+        dest: "{{py_link_dir}}/{{item.dest}}{{py_ver}}"
+        state: link
+      with_items:
+        - { src: "2to3", dest: "2to3" }
+        - { src: "idle", dest: "idle" }
+        - { src: "pydoc", dest: "pydoc" }
+        - { src: "python{{py_family}}", dest: "python" }
+        - { src: "easy_install", dest: "easy_install" }
+        - { src: "pip", dest: "pip" }
+        - { src: "virtualenv", dest: "virtualenv" }
+
+
