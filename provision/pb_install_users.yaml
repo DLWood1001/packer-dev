@@ -1,6 +1,6 @@
 ---
 - name: Install Users
-  hosts: all
+  hosts: "{{hosts|d(host|d('all'))}}"
   gather_facts: no
  
   vars:

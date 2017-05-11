@@ -1,6 +1,6 @@
 ---
 - name: Bootstrap Ansible
-  hosts: all
+  hosts: "{{hosts|d(host|d('all'))}}"
   gather_facts: no
  
   vars:
