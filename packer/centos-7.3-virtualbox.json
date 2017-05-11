@@ -20,7 +20,7 @@
          ],
 
          "boot_command": [
-            "<tab> biosdevname=0 ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `name`}}-{{user `kickstart_target`}}.cfg<enter>"
+            "<tab> ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `name`}}-{{user `kickstart_target`}}.cfg<enter>"
          ],
          "boot_wait": "10s",
          "shutdown_command": "echo 'password' | sudo -S shutdown -h now",
@@ -39,14 +39,12 @@
          "type": "ansible",
          "playbook_file": "./provision/pb_install_users.yaml",
          "extra_arguments": [
-            "--extra-vars", "ansible_become_pass={{user `sudo_password`}}",
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
       },
       {
          "type": "ansible",
-         "only": ["virtualbox"],
          "playbook_file": "./provision/pb_install_virtualbox_guest_additions.yaml",
          "extra_arguments": [
             "--extra-vars", "provider={{user `provider`}}",
@@ -61,9 +59,16 @@
       },
       {
          "type": "ansible",
+         "playbook_file": "./provision/pb_install_google_chrome.yaml",
+         "extra_arguments": [
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+      {
+         "type": "ansible",
          "playbook_file": "./provision/pb_optimize_sshd.yaml",
          "extra_arguments": [
-            "--extra-vars", "ansible_become_pass={{user `sudo_password`}}",
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
@@ -72,7 +77,6 @@
          "type": "ansible",
          "playbook_file": "./provision/pb_optimize_grub.yaml",
          "extra_arguments": [
-            "--extra-vars", "ansible_become_pass={{user `sudo_password`}}",
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
@@ -81,7 +85,6 @@
          "type": "ansible",
          "playbook_file": "./provision/pb_optimize_yum.yaml",
          "extra_arguments": [
-            "--extra-vars", "ansible_become_pass={{user `sudo_password`}}",
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
@@ -90,7 +93,8 @@
          "type": "ansible",
          "playbook_file": "./provision/pb_fix_networking.yaml",
          "extra_arguments": [
-            "--extra-vars", "ansible_become_pass={{user `sudo_password`}}",
+            "--extra-vars", "provider={{user `provider`}}",
+
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
