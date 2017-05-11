@@ -67,6 +67,16 @@
       },
       {
          "type": "ansible",
+         "playbook_file": "./provision/pb_install_python_alt.yaml",
+         "extra_arguments": [
+            "--extra-vars", "version={{user `python_version`}}",
+
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+      {
+         "type": "ansible",
          "playbook_file": "./provision/pb_optimize_sshd.yaml",
          "extra_arguments": [
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
@@ -129,6 +139,8 @@
       "ssh_ansible_port": "2222",
 
       "sudo_password": "password",
+
+      "python_version": "2.7.11",
 
       "http_proxy": "{{env `http_proxy`}}",
       "https_proxy": "{{env `https_proxy`}}"
