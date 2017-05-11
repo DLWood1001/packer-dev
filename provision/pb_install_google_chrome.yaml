@@ -20,5 +20,5 @@
     - name: Install Google Chrome
       yum:
         name: google-chrome-stable
-        enablerepo: google_chrome
+        enablerepo: google-chrome
         state: latest
