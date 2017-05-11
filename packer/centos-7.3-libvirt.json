@@ -117,6 +117,7 @@
    "variables": {
       "name": "centos-7.3",
       "provider": "libvirt",
+      "media": "local",
 
       "iso_file": "CentOS-7-x86_64-DVD-1611.iso",
       "iso_path": "http://mirrors.kernel.org/centos/7.3.1611/isos/x86_64",
