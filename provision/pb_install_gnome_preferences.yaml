@@ -1,0 +1,22 @@
+---
+- name: Install Gnome Preferences
+  # hosts: "{{hosts|d(host|d('all'))}}"
+  hosts: localhost
+  connection: local
+  gather_facts: no
+ 
+  vars:
+    gp_extensions:
+      - gnome-shell-extension-apps-menu
+      - gnome-shell-extension-window-list
+      - gnome-shell-extension-places-menu
+      - gnome-shell-extension-alternate-tab
+      - gnome-shell-extension-launch-new-instance
+      - gnome-shell-extension-top-icons
+
+  # environment:
+  #   http_proxy: "{{http_proxy}}"
+
+  tasks:
+    - debug:
+        msg: "{{['a','b']|join("\',\'")}}"
