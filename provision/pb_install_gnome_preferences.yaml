@@ -63,6 +63,16 @@
       become_user: admin
 
 
+    # Disable Screen Saver Lock
+    # -------------------------
+    - name: Disable Screen Saver Lock
+      shell: |
+        dbus-launch dconf write {{gd_base}}/screensaver/lock-enabled false
+        dbus-launch dconf update
+      become: true
+      become_user: admin
+
+
     # Disable Session Idle
     # --------------------
     - name: Disable Session Idle
@@ -71,6 +81,17 @@
         dbus-launch dconf update
       become: true
       become_user: admin
+
+
+    # Disable Power Savings
+    # --------------------
+    - name: Disable Power Savings
+      shell: |
+        dbus-launch dconf write /org/gnome/settings-daemon/plugins/power/active false
+        dbus-launch dconf update
+      become: true
+      become_user: admin
+
 
 
     # Show Desktop Icons
@@ -107,7 +128,7 @@
     # --------------------------------------------
     - name: Enable Maximize, Minimize, and Close Buttons
       shell: |
-        dbus-launch dconf write {{gd_base}}/wm/preferences/button-layout "appmenu:minimize,maximize,close"
+        dbus-launch dconf write {{gd_base}}/wm/preferences/button-layout \"'appmenu:minimize,maximize,close'\"
         dbus-launch dconf update
       become: true
       become_user: admin
