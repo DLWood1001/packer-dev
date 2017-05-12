@@ -61,7 +61,7 @@
       },
       {
          "type": "ansible",
-         "playbook_file": "./provision/pb_install_google_chrome.yaml",
+         "playbook_file": "./provision/pb_install_browsers.yaml",
          "extra_arguments": [
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"

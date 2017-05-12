@@ -4,6 +4,8 @@
   gather_facts: no
  
   vars:
+    # Gnome Extension Variables
+    # -------------------------
     gp_base: /org/gnome/shell
     gp_key: enabled-extensions
     gp_extension_name_suffix: gnome-shell-extensions.gcampax.github.com
@@ -15,6 +17,11 @@
       - alternate-tab
       - launch-new-instance
       - top-icons
+
+
+    # Gnome Desktop Variables
+    # -----------------------
+    gd_base: /org/gnome/desktop
 
   environment:
     http_proxy: "{{http_proxy|default(None)}}"
@@ -45,6 +52,65 @@
       become: true
       become_user: admin
 
+
+    # Disable Lock Screen 
+    # -------------------
+    - name: Disable Lock Screen
+      shell: |
+        dbus-launch dconf write {{gd_base}}/lockdown/disable-lock-screen true
+        dbus-launch dconf update
+      become: true
+      become_user: admin
+
+
+    # Disable Session Idle
+    # --------------------
+    - name: Disable Session Idle
+      shell: |
+        dbus-launch dconf write {{gd_base}}/session/idle-delay 0
+        dbus-launch dconf update
+      become: true
+      become_user: admin
+
+
+    # Show Desktop Icons
+    # ------------------
+    - name: Enable Desktop Icons
+      shell: |
+        dbus-launch dconf write {{gd_base}}/background/show-desktop-icons true
+        dbus-launch dconf update
+      become: true
+      become_user: admin
+
+
+    # Show Top Bar Date
+    # -----------------
+    - name: Enable Top Bar Date
+      shell: |
+        dbus-launch dconf write {{gd_base}}/interface/show-desktop-icons true
+        dbus-launch dconf update
+      become: true
+      become_user: admin
+
+
+    # Show Clock Date
+    # ---------------
+    - name: Enable Clock Date
+      shell: |
+        dbus-launch dconf write {{gd_base}}/interface/clock-show-date true
+        dbus-launch dconf update
+      become: true
+      become_user: admin
+
+
+    # Enable Maximize, Minimize, and Close Buttons
+    # --------------------------------------------
+    - name: Enable Maximize, Minimize, and Close Buttons
+      shell: |
+        dbus-launch dconf write {{gd_base}}/wm/preferences/button-layout "appmenu:minimize,maximize,close"
+        dbus-launch dconf update
+      become: true
+      become_user: admin
 
 
     # Enable Automatic Login

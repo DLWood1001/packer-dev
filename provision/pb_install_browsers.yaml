@@ -1,10 +1,10 @@
 ---
-- name: Install Google Chrome
+- name: Install Browsers
   hosts: "{{hosts|d(host|d('all'))}}"
   gather_facts: no
  
   environment:
-    http_proxy: "{{http_proxy}}"
+    http_proxy: "{{http_proxy|default(None)}}"
 
   tasks:
     - name: Install Google Chrome Repository
@@ -20,5 +20,16 @@
     - name: Install Google Chrome
       yum:
         name: google-chrome-stable
+        disablerepo: '*'
         enablerepo: google-chrome
+        state: latest
+
+    - name: Remove Google Chrome Repository
+      yum_repository:
+        name: google-chrome
+        state: absent
+
+    - name: Install Firefox
+      yum:
+        name: firefox
         state: latest
