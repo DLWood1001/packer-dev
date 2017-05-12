@@ -3,10 +3,23 @@
   hosts: "{{hosts|d(host|d('all'))}}"
   gather_facts: no
  
+  vars:
+    gc_dependencies:
+      - xdg-utils
+      - wget
+      - libXScrnSaver
+      - redhat-lsb
+
   environment:
     http_proxy: "{{http_proxy|default(None)}}"
 
   tasks:
+    - name: Install Google Chrome Dependencies
+      yum:
+        name: "{{item}}"
+        state: latest
+      with_items: "{{gc_dependencies}}"
+
     - name: Install Google Chrome Repository
       yum_repository:
         name: google-chrome
