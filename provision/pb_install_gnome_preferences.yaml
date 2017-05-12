@@ -20,13 +20,15 @@
     http_proxy: "{{http_proxy|default(None)}}"
 
   tasks:
+    # Install Gnome Extensions
+    # ------------------------
     - name: Install Gnome Extensions
       yum:
         name: "{{gp_extension_package_prefix}}-{{item}}"
         state: present
       with_items: "{{gp_extensions}}"
 
-    - name: Generate dconf value.
+    - name: Generate Gnome dconf Setting
       set_fact:
         gp_value: >-
           "[
@@ -36,8 +38,23 @@
           {%- endfor -%}
           ]"
 
-    - shell: |
+    - name: Enable Gnome Extensions
+      shell: |
         dbus-launch dconf write {{gp_base}}/{{gp_key}} {{gp_value}}
         dbus-launch dconf update
       become: true
       become_user: admin
+
+
+
+    # Enable Automatic Login
+    # ----------------------
+    - name: Enable Gnome Automatic Login
+      lineinfile:
+        path: /etc/gdm/custom.conf
+        # regexp: ^\[daemon\]$
+        insertafter: ^\[daemon\]$
+        line: |-
+          AutomaticLoginEnable=True
+          AutomaticLogin=admin
+        state: present
