@@ -1,0 +1,43 @@
+---
+- name: Install Gnome Preferences
+  hosts: "{{hosts|d(host|d('all'))}}"
+  gather_facts: no
+ 
+  vars:
+    gp_base: /org/gnome/shell
+    gp_key: enabled-extensions
+    gp_extension_name_suffix: gnome-shell-extensions.gcampax.github.com
+    gp_extension_package_prefix: gnome-shell-extension
+    gp_extensions:
+      - apps-menu
+      - window-list
+      - places-menu
+      - alternate-tab
+      - launch-new-instance
+      - top-icons
+
+  environment:
+    http_proxy: "{{http_proxy|default(None)}}"
+
+  tasks:
+    - name: Install Gnome Extensions
+      yum:
+        name: "{{gp_extension_package_prefix}}-{{item}}"
+        state: present
+      with_items: "{{gp_extensions}}"
+
+    - name: Generate dconf value.
+      set_fact:
+        gp_value: >-
+          "[
+          {%- for gp_extension in gp_extensions -%}
+          '{{gp_extension}}@{{gp_extension_name_suffix}}'
+          {%- if not loop.last -%},{%- endif -%}
+          {%- endfor -%}
+          ]"
+
+    - shell: |
+        dbus-launch dconf write {{gp_base}}/{{gp_key}} {{gp_value}}
+        dbus-launch dconf update
+      become: true
+      become_user: admin
