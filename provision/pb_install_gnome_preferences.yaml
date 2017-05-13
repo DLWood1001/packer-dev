@@ -6,7 +6,7 @@
   vars:
     # Gnome Extension Variables
     # -------------------------
-    gp_base: /org/gnome/shell
+    gp_base: org.gnome.shell
     gp_key: enabled-extensions
     gp_extension_name_suffix: gnome-shell-extensions.gcampax.github.com
     gp_extension_package_prefix: gnome-shell-extension
@@ -21,7 +21,7 @@
 
     # Gnome Desktop Variables
     # -----------------------
-    gd_base: /org/gnome/desktop
+    gd_base: org.gnome.desktop
 
   environment:
     http_proxy: "{{http_proxy|default(None)}}"
@@ -47,8 +47,7 @@
 
     - name: Enable Gnome Extensions
       shell: |
-        dbus-launch dconf write {{gp_base}}/{{gp_key}} {{gp_value}}
-        dbus-launch dconf update
+        dbus-launch gsettings set {{gp_base}} {{gp_key}} {{gp_value}}
       become: true
       become_user: admin
 
@@ -57,8 +56,7 @@
     # -------------------
     - name: Disable Lock Screen
       shell: |
-        dbus-launch dconf write {{gd_base}}/lockdown/disable-lock-screen true
-        dbus-launch dconf update
+        dbus-launch gsettings set {{gd_base}}.lockdown disable-lock-screen false
       become: true
       become_user: admin
 
@@ -67,8 +65,7 @@
     # -------------------------
     - name: Disable Screen Saver Lock
       shell: |
-        dbus-launch dconf write {{gd_base}}/screensaver/lock-enabled false
-        dbus-launch dconf update
+        dbus-launch gsettings set {{gd_base}}.screensaver lock-enabled false
       become: true
       become_user: admin
 
@@ -77,8 +74,7 @@
     # --------------------
     - name: Disable Session Idle
       shell: |
-        dbus-launch dconf write {{gd_base}}/session/idle-delay 0
-        dbus-launch dconf update
+        dbus-launch gsettings set {{gd_base}}.session idle-delay 0
       become: true
       become_user: admin
 
@@ -87,8 +83,7 @@
     # --------------------
     - name: Disable Power Savings
       shell: |
-        dbus-launch dconf write /org/gnome/settings-daemon/plugins/power/active false
-        dbus-launch dconf update
+        dbus-launch gsettings set org.gnome.settings-daemon.plugins.power active false
       become: true
       become_user: admin
 
@@ -98,18 +93,7 @@
     # ------------------
     - name: Enable Desktop Icons
       shell: |
-        dbus-launch dconf write {{gd_base}}/background/show-desktop-icons true
-        dbus-launch dconf update
-      become: true
-      become_user: admin
-
-
-    # Show Top Bar Date
-    # -----------------
-    - name: Enable Top Bar Date
-      shell: |
-        dbus-launch dconf write {{gd_base}}/interface/show-desktop-icons true
-        dbus-launch dconf update
+        dbus-launch gsettings set {{gd_base}}.background show-desktop-icons true
       become: true
       become_user: admin
 
@@ -118,8 +102,7 @@
     # ---------------
     - name: Enable Clock Date
       shell: |
-        dbus-launch dconf write {{gd_base}}/interface/clock-show-date true
-        dbus-launch dconf update
+        dbus-launch gsettings set {{gd_base}}.interface clock-show-date true
       become: true
       become_user: admin
 
@@ -128,8 +111,7 @@
     # --------------------------------------------
     - name: Enable Maximize, Minimize, and Close Buttons
       shell: |
-        dbus-launch dconf write {{gd_base}}/wm/preferences/button-layout \"'appmenu:minimize,maximize,close'\"
-        dbus-launch dconf update
+        dbus-launch gsettings set {{gd_base}}.wm.preferences button-layout \"'appmenu:minimize,maximize,close'\"
       become: true
       become_user: admin
 
