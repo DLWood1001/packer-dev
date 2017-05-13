@@ -10,6 +10,13 @@
       - libXScrnSaver
       - redhat-lsb
 
+    gc_selenium_dependencies:
+      - unzip
+
+    gc_selenium_version: 2.29
+    gc_selenium_base: http://chromedriver.storage.googleapis.com
+    gc_selenium_file: chromedriver_linux64.zip
+
   environment:
     http_proxy: "{{http_proxy|default(None)}}"
 
@@ -41,6 +48,32 @@
       yum_repository:
         name: google-chrome
         state: absent
+
+    - name: Install Google Chrome Selenium Dependencies
+      yum:
+        name: "{{item}}"
+        state: latest
+      with_items: "{{gc_selenium_dependencies}}"
+
+    - name: Download Google Chrome Selenium Driver
+      get_url:
+        url: "{{gc_selenium_base}}/{{gc_selenium_version}}/{{gc_selenium_file}}"
+        dest: "/tmp/{{gc_selenium_file}}"
+        validate_certs: no
+
+    - name: Extract Google Chrome Selenium Driver
+      unarchive:
+        src: "/tmp/{{gc_selenium_file}}"
+        dest: "/tmp"
+        remote_src: true
+        creates: /tmp/chromedriver
+
+    - name: Install Google Chrome Selenium Driver
+      copy:
+        src: /tmp/chromedriver
+        dest: /usr/local/bin/chromedriver
+        mode: 0755
+        remote_src: true
 
     - name: Install Firefox
       yum:
