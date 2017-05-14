@@ -26,6 +26,11 @@
   environment:
     http_proxy: "{{http_proxy|default(None)}}"
 
+  pre_tasks:
+    - name: Validate | Test if the target is graphical.
+      meta: end_play
+      when: target|default('multi-user') != 'graphical'
+
   tasks:
     # Install Gnome Extensions
     # ------------------------
