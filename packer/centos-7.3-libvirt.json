@@ -20,18 +20,16 @@
          "boot_command": [
             "<tab>",
             "<rightCtrlOn>ww<rightCtrlOff>",
-            "quiet ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `name`}}-{{user `kickstart_target`}}.cfg",
+            "quiet ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `name`}}-{{user `target`}}.cfg",
             "<enter>"
          ],
-         "boot_wait": "10s",
-         "shutdown_command": "echo 'password' | sudo -S shutdown -h now",
+         "boot_wait": "5s",
+         "shutdown_command": "echo '{{user `ssh_password`}}' | sudo -S shutdown -h now",
 
          "ssh_username": "{{user `ssh_username`}}",
          "ssh_password": "{{user `ssh_password`}}",
          "ssh_port": "{{user `ssh_port`}}",
-         "ssh_wait_timeout": "25m",
-
-         "shutdown_command": "echo 'password' | sudo -S shutdown -h now"
+         "ssh_wait_timeout": "25m"
       }
    ],
 
@@ -49,6 +47,7 @@
          "type": "ansible",
          "playbook_file": "./provision/pb_install_virtualbox_guest_additions.yaml",
          "extra_arguments": [
+            "--extra-vars", "target={{user `target`}}",
             "--extra-vars", "provider={{user `provider`}}",
 
             "--extra-vars", "reboot_username={{user `ssh_username`}}",
@@ -63,6 +62,8 @@
          "type": "ansible",
          "playbook_file": "./provision/pb_install_browsers.yaml",
          "extra_arguments": [
+            "--extra-vars", "target={{user `target`}}",
+
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
@@ -81,6 +82,8 @@
          "type": "ansible",
          "playbook_file": "./provision/pb_install_gnome_preferences.yaml",
          "extra_arguments": [
+            "--extra-vars", "target={{user `target`}}",
+
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
@@ -136,13 +139,14 @@
    "post-processors": [
       {
         "type": "vagrant",
-        "output": "builds/{{user `name`}}.{{user `provider`}}.box",
+        "output": "builds/{{user `name`}}.{{user `target`}}.{{user `provider`}}.box",
         "vagrantfile_template": "./templates/vagrantfile-defaults"
       }
    ],
 
    "variables": {
       "name": "centos-7.3",
+      "target": "graphical",
       "provider": "libvirt",
       "media": "local",
 
@@ -150,7 +154,6 @@
       "iso_path": "http://mirrors.kernel.org/centos/7.3.1611/isos/x86_64",
       "iso_checksum_sha256_hash": "c455ee948e872ad2194bdddd39045b83634e8613249182b88f549bb2319d97eb",
 
-      "kickstart_target": "graphical",
 
       "cpus": "4",
       "memory": "4096",

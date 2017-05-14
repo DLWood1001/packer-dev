@@ -5,6 +5,7 @@
  
   vars:
     version: "5.1.22"
+    vbox_target: "{{target|default('multi-user')}}"
     vbox_provider: "{{provider|default('')}}"
     vbox_version: "{{version|default('latest')}}"
 
@@ -30,6 +31,10 @@
     http_proxy: "{{http_proxy}}"
 
   pre_tasks:
+    - name: Validate | Test if the target is graphical.
+      meta: end_play
+      when: vbox_target != 'graphical'
+
     - name: Validate | Test if the provider is supported.
       meta: end_play
       when: vbox_provider != 'virtualbox'
