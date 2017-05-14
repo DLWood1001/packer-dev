@@ -17,10 +17,24 @@
     gc_selenium_base: http://chromedriver.storage.googleapis.com
     gc_selenium_file: chromedriver_linux64.zip
 
+    ff_selenium_dependencies:
+      - libcanberra-gtk2 
+      - xorg-x11-server-Xvfb
+
+    ff_selenium_base: ~/.mozilla/firefox
+    ff_selenium_file: selenium
+
   environment:
     http_proxy: "{{http_proxy|default(None)}}"
 
+  pre_tasks:
+    - name: Validate | Test if the target is graphical.
+      meta: end_play
+      when: target|default('multi-user') != 'graphical'
+
   tasks:
+    # Install Google Chrome
+    # ---------------------
     - name: Install Google Chrome Dependencies
       yum:
         name: "{{item}}"
@@ -49,6 +63,12 @@
         name: google-chrome
         state: absent
 
+    - name: Adjust Google Chrome Repository Cron
+      replace:
+        path: "/etc/cron.daily/google-chrome"
+        regexp: ^(?:#| +)?enabled=(?:0|1)$
+        replace: "enabled=0"
+
     - name: Install Google Chrome Selenium Dependencies
       yum:
         name: "{{item}}"
@@ -75,7 +95,23 @@
         mode: 0755
         remote_src: true
 
+    # Install Firefox
+    # ---------------
+    - name: Install Firefox Selenium Dependencies
+      yum:
+        name: "{{item}}"
+        state: latest
+      with_items: "{{ff_selenium_dependencies}}"
+
     - name: Install Firefox
       yum:
         name: firefox
         state: latest
+
+    - name: Create Firefox Profile
+      shell: |
+        xvfb-run firefox -CreateProfile {{ff_selenium_file}}
+        mv {{ff_selenium_base}}/*.{{ff_selenium_file}} {{ff_selenium_base}}/{{ff_selenium_file}}
+        rm {{ff_selenium_base}}/profiles.ini
+      become: true
+      become_user: admin
