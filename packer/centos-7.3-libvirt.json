@@ -132,8 +132,15 @@
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
+      },
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_optimize_disk_size.yaml",
+         "extra_arguments": [
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
       }
-
    ],
 
    "post-processors": [
