@@ -27,6 +27,7 @@ Vagrant.configure("2") do |config|
      create: true,
      disabled: false
 
+  config.vbguest.auto_update = false
 
   # Default Provider Overrides
   # --------------------------
