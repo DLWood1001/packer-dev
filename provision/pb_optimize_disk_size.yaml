@@ -15,6 +15,12 @@
     - name: Remove Log Files
       shell: find /var/log/ -name *.log -exec rm -f {} \;
 
+    - name: Remove Home Directory Files
+      shell: find /root -mindepth 1 -delete
+
+    - name: Remove Temporary Directory Files
+      shell: find /tmp -mindepth 1 -delete
+
     - name: Zero Free Space
       shell: |
         count=$(expr $(df --sync -kP {{item}} | tail -n1 | awk -F ' ' '{print $4}') - 1)
