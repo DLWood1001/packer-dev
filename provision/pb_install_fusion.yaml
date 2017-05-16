@@ -4,7 +4,41 @@
   gather_facts: no
  
   vars:
-    f_python_version: 2.7.11
+    # Fusion Variables
+    # ----------------
+    f_install_directory: /opt/fusion
+    f_download_directory: /tmp/fusion
+    f_dependencies:
+      - readline-devel
+      - tk-devel
+      - libffi-devel
+      - python-devel
+
+    f_slim: true
+    f_slim_base: "{{f_download_directory}}/fusion/tests"
+    f_slim_directories:
+      - wpst_crm
+      - RIST
+      - DEA
+      - cosmos
+      - epic
+      - tbird_hal
+
+
+    # Fusion Python Variables
+    # -----------------------
+    f_py_ver: "{{version|default('2.7.11')}}"
+    f_py_base: "/usr/local/python{{f_py_ver}}/bin"
+    f_py_venv_base: "/opt/py{{f_py_ver}}-env"
+
+    # Note (Dan): Don't edit variables below.
+    f_py_ver_regex: "^([0-9]+)\\.([0-9]+)\\.([0-9]+)$"
+
+    f_py_major: "{{f_py_ver|regex_replace(f_py_ver_regex, '\\1')}}"
+    f_py_minor: "{{f_py_ver|regex_replace(f_py_ver_regex, '\\2')}}"
+    f_py_patch: "{{f_py_ver|regex_replace(f_py_ver_regex, '\\3')}}"
+
+    f_py_family: "{{f_py_major}}.{{f_py_minor}}"
 
   environment:
     http_proxy: "{{http_proxy|default(None)}}"
@@ -15,5 +49,82 @@
     #   when: target|default('multi-user') != 'graphical'
 
   tasks:
+    - name: Install Fusion Dependencies
+      yum:
+        name: "{{item}}"
+        state: present
+      with_items: "{{f_dependencies}}"
+
     - name: Create Python Virtualenv
       shell: |
+        {{f_py_base}}/virtualenv -p {{f_py_base}}/python{{f_py_family}} py{{f_py_ver}}-env
+      args:
+        chdir: /opt
+        creates: /opt/py{{f_py_ver}}-env/bin/activate
+
+    - name: Install Fusion Key File
+      copy:
+        src: ./id_rsa.git
+        dest: /tmp/id_rsa.git
+        mode: 0600
+
+    - name: Fusion Exists?
+      stat:
+        path: "{{f_install_directory}}"
+      register: fusion_stat
+
+    - name: Download Fusion
+      git:
+        ssh_opts: >-
+          -o StrictHostKeyChecking=no
+          -o UserKnownHostsFile=/dev/null
+        repo: git@15.252.78.7:/opt/git/fusion.git
+        clone: true
+        key_file: /tmp/id_rsa.git
+        dest: "{{f_download_directory}}"
+      when: not fusion_stat.stat.exists
+
+    - name: Slim Fusion Install
+      file:
+        path: "{{f_slim_base}}/{{item}}"
+        state: absent
+      with_items: "{{f_slim_directories}}"
+      when: f_slim == true and not fusion_stat.stat.exists
+
+    - name: Move Fusion Install
+      command: mv {{f_download_directory}}/fusion {{f_install_directory}}
+      args:
+        creates: "{{f_install_directory}}/install.sh"
+
+    - name: Install Fusion
+      shell: |
+        source /opt/py{{f_py_ver}}-env/bin/activate
+        ./install.sh
+        deactivate
+      args:
+        chdir: "{{f_install_directory}}"
+        creates: "/opt/py{{f_py_ver}}-env/lib/python{{f_py_family}}/site-packages/FusionLibrary.egg-link"
+
+    - name: Fix Paramiko
+      pip:
+        name: paramiko
+        state: latest
+        virtualenv: /opt/py{{f_py_ver}}-env
+      changed_when: false
+
+    - name: Clean Fusion Install Directory
+      file:
+        path: "{{f_download_directory}}"
+        state: absent
+
+    - name: Clean Fusion Install Dependencies
+      yum:
+        name: "{{item}}"
+        state: absent
+      with_items: "{{f_dependencies}}"
+
+    - name: Clean Fusion Install Key File
+      file:
+        path: /tmp/id_rsa.git
+        state: absent
+
