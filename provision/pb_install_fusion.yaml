@@ -1,0 +1,17 @@
+---
+- name: Install Fusion
+  hosts: "{{hosts|d(host|d('all'))}}"
+  gather_facts: no
+ 
+  vars:
+    tmp: true
+
+  environment:
+    http_proxy: "{{http_proxy|default(None)}}"
+
+  pre_tasks:
+    - name: Validate | Test if the target is graphical.
+      meta: end_play
+      when: target|default('multi-user') != 'graphical'
+
+  tasks:
