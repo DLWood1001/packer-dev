@@ -38,7 +38,6 @@
          "type": "ansible",
          "playbook_file": "./provision/pb_install_users.yaml",
          "extra_arguments": [
-            "--extra-vars", "ansible_become_pass={{user `sudo_password`}}",
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
@@ -80,6 +79,14 @@
       },
       {
          "type": "ansible",
+         "playbook_file": "./provision/pb_install_fusion.yaml",
+         "extra_arguments": [
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+      {
+         "type": "ansible",
          "playbook_file": "./provision/pb_install_gnome_preferences.yaml",
          "extra_arguments": [
             "--extra-vars", "target={{user `target`}}",
@@ -100,7 +107,6 @@
          "type": "ansible",
          "playbook_file": "./provision/pb_optimize_sshd.yaml",
          "extra_arguments": [
-            "--extra-vars", "ansible_become_pass={{user `sudo_password`}}",
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
@@ -109,7 +115,6 @@
          "type": "ansible",
          "playbook_file": "./provision/pb_optimize_grub.yaml",
          "extra_arguments": [
-            "--extra-vars", "ansible_become_pass={{user `sudo_password`}}",
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
@@ -118,7 +123,6 @@
          "type": "ansible",
          "playbook_file": "./provision/pb_optimize_yum.yaml",
          "extra_arguments": [
-            "--extra-vars", "ansible_become_pass={{user `sudo_password`}}",
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
@@ -161,7 +165,6 @@
       "iso_path": "http://mirrors.kernel.org/centos/7.3.1611/isos/x86_64",
       "iso_checksum_sha256_hash": "c455ee948e872ad2194bdddd39045b83634e8613249182b88f549bb2319d97eb",
 
-
       "cpus": "4",
       "memory": "4096",
       "headless": "false",
@@ -169,7 +172,7 @@
       "ssh_username": "root",
       "ssh_password": "password",
       "ssh_port": "22",
-      "ssh_ansible_port": "2222",
+      "ssh_ansible_port": "2323",
 
       "sudo_password": "password",
 
