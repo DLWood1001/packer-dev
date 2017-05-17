@@ -149,3 +149,12 @@
         - { src: "virtualenv", dest: "virtualenv" }
 
 
+
+    # Clean Python Install
+    # --------------------
+    - name: Uninstall Required Core Dependencies
+      yum:
+        name: "{{item}}"
+        state: removed
+      with_items: "{{py_dependencies}}"
+
