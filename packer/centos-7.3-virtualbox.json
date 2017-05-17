@@ -20,7 +20,10 @@
          ],
 
          "boot_command": [
-            "<tab> ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `name`}}-{{user `target`}}.cfg<enter>"
+            "<tab>",
+            "<leftCtrlOn>ww<leftCtrlOff>",
+            "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `name`}}-{{user `target`}}.cfg",
+            "<enter>"
          ],
          "boot_wait": "5s",
          "shutdown_command": "echo 'password' | sudo -S shutdown -h now",
@@ -171,7 +174,7 @@
       "ssh_username": "root",
       "ssh_password": "password",
       "ssh_port": "22",
-      "ssh_ansible_port": "2222",
+      "ssh_ansible_port": "2323",
 
       "sudo_password": "password",
 
