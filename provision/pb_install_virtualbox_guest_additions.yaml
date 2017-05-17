@@ -89,6 +89,12 @@
         path: "/tmp/{{vbox_iso}}"
         state: absent
 
+    - name: Clean Python Install Dependencies
+      package:
+        name: "{{item}}"
+        state: present
+      with_items: "{{vbox_dependencies}}"
+
   post_tasks:
     # Note(Dan): This fixes issues with the guest additions video driver not
     #            working until after two of reboots.
