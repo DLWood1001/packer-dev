@@ -22,6 +22,8 @@
          "boot_command": [
             "<tab>",
             "<leftCtrlOn>ww<leftCtrlOff>",
+            "biosdevname=1 ",
+            "net.ifnames=1 ",
             "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `name`}}-{{user `target`}}.cfg",
             "<enter>"
          ],
@@ -107,6 +109,16 @@
       },
       {
          "type": "ansible",
+         "playbook_file": "./provision/pb_fix_networking.yaml",
+         "extra_arguments": [
+            "--extra-vars", "provider={{user `provider`}}",
+
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+      {
+         "type": "ansible",
          "playbook_file": "./provision/pb_optimize_sshd.yaml",
          "extra_arguments": [
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
@@ -125,16 +137,6 @@
          "type": "ansible",
          "playbook_file": "./provision/pb_optimize_yum.yaml",
          "extra_arguments": [
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_fix_networking.yaml",
-         "extra_arguments": [
-            "--extra-vars", "provider={{user `provider`}}",
-
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
