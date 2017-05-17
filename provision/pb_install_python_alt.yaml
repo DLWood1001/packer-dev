@@ -13,6 +13,10 @@
       - 'openssl-devel'
       - 'ncurses-devel'
       - 'sqlite-devel'
+      - 'readline-devel'
+      - 'tk-devel'
+      - 'libffi-devel'
+      - 'python-devel'
 
     # Note (Dan): Don't edit variables below.
     py_ver_regex: "^([0-9]+)\\.([0-9]+)\\.([0-9]+)$"
@@ -152,9 +156,9 @@
 
     # Clean Python Install
     # --------------------
-    - name: Uninstall Required Core Dependencies
-      yum:
-        name: "{{item}}"
-        state: removed
-      with_items: "{{py_dependencies}}"
+    # - name: Uninstall Required Core Dependencies
+    #   yum:
+    #     name: "{{item}}"
+    #     state: removed
+    #   with_items: "{{py_dependencies}}"
 
