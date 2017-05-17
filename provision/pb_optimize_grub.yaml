@@ -11,6 +11,14 @@
         line: GRUB_TIMEOUT=0
         state: present
 
+    - name: Enable Consistent Network Device Names
+      lineinfile:
+        path: /etc/default/grub
+        regexp: ^GRUB_CMDLINE_LINUX="(.*?)"$
+        backrefs: true
+        line: GRUB_CMDLINE_LINUX="\1 biosdevname=1 net.ifnames=1"
+        state: present
+
     - name: Update Grub Config
       command: grub2-mkconfig -o /boot/grub2/grub.cfg
 
