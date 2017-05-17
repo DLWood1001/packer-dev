@@ -6,18 +6,21 @@
   vars:
     # Fusion Variables
     # ----------------
+    f_dependencies:
+      - 'git'
+      - 'readline-devel'
+      - 'tk-devel'
+      - 'libffi-devel'
+      - 'python-devel'
+
     f_git_username: git
     f_git_host: 15.252.78.7
+    f_venv_username: admin
     f_install_directory: /opt/fusion
     f_download_directory: /tmp/fusion
-    f_dependencies:
-      - readline-devel
-      - tk-devel
-      - libffi-devel
-      - python-devel
 
     f_slim: true
-    f_slim_base: "{{f_download_directory}}/fusion/tests"
+    f_slim_base: "{{f_download_directory}}/tests"
     f_slim_directories:
       - wpst_crm
       - RIST
@@ -57,9 +60,6 @@
       failed_when: false
       changed_when: false
       ignore_errors: true
-
-    - debug:
-        msg: "{{fusion_reachable}}"
 
     - name: Validate Fusion host reachability 
       meta: end_play
@@ -109,7 +109,7 @@
       when: f_slim == true and not fusion_stat.stat.exists
 
     - name: Move Fusion Install
-      command: mv {{f_download_directory}}/fusion {{f_install_directory}}
+      command: mv {{f_download_directory}} {{f_install_directory}}
       args:
         creates: "{{f_install_directory}}/install.sh"
 
@@ -129,16 +129,20 @@
         virtualenv: /opt/py{{f_py_ver}}-env
       changed_when: false
 
+    - name: Install Auto Virtualenv Script
+      become: true
+      become_user: "{{f_venv_username}}"
+      blockinfile:
+        dest: "/home/{{f_venv_username}}/.bashrc"
+        block: "{{lookup('template', 'fusion_virtualenv.bashrc.j2')}}"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - Fusion Virtualenv"
+        insertbefore: EOF
+        create: yes
+
     - name: Clean Fusion Install Directory
       file:
         path: "{{f_download_directory}}"
         state: absent
-
-    - name: Clean Fusion Install Dependencies
-      yum:
-        name: "{{item}}"
-        state: absent
-      with_items: "{{f_dependencies}}"
 
     - name: Clean Fusion Install Key File
       file:

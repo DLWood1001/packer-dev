@@ -1,0 +1,8 @@
+export VIRTUAL_ENV_DISABLE_PROMPT=1
+
+export VIRTUAL_ENV_FUSION="{{f_py_venv_base}}"
+if [ "${VIRTUAL_ENV}" == "" ]; then
+   if [ -f "${VIRTUAL_ENV_FUSION}/bin/activate" ]; then
+      source "${VIRTUAL_ENV_FUSION}/bin/activate"
+   fi
+fi
