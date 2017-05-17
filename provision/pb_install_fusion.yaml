@@ -6,6 +6,8 @@
   vars:
     # Fusion Variables
     # ----------------
+    f_git_username: git
+    f_git_host: 15.252.78.7
     f_install_directory: /opt/fusion
     f_download_directory: /tmp/fusion
     f_dependencies:
@@ -44,9 +46,24 @@
     http_proxy: "{{http_proxy|default(None)}}"
 
   pre_tasks:
-    # - name: Validate | Test if the target is graphical.
-    #   meta: end_play
-    #   when: target|default('multi-user') != 'graphical'
+    - name: Check if Fusion host is reachable
+      wait_for:
+        host: "{{f_git_host}}"
+        port: 22
+        timeout: 1
+        delay: 0
+        state: started
+      register: fusion_reachable
+      failed_when: false
+      changed_when: false
+      ignore_errors: true
+
+    - debug:
+        msg: "{{fusion_reachable}}"
+
+    - name: Validate Fusion host reachability 
+      meta: end_play
+      when: fusion_reachable.state is not defined
 
   tasks:
     - name: Install Fusion Dependencies
@@ -78,7 +95,7 @@
         ssh_opts: >-
           -o StrictHostKeyChecking=no
           -o UserKnownHostsFile=/dev/null
-        repo: git@15.252.78.7:/opt/git/fusion.git
+        repo: "{{f_git_username}}@{{f_git_host}}:/opt/git/fusion.git"
         clone: true
         key_file: /tmp/id_rsa.git
         dest: "{{f_download_directory}}"
