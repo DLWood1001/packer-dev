@@ -16,9 +16,10 @@ Vagrant.configure("2") do |config|
 
   # Default Vagrant Overrides
   # -------------------------
-  config.vm.guest = "redhat"
-
+  config.vm.hostname = "robot.local"
   config.ssh.username = "admin"
+
+  config.vm.guest = "redhat"
 
   config.ssh.insert_key = false
 
@@ -29,6 +30,9 @@ Vagrant.configure("2") do |config|
      create: true,
      disabled: false
 
+  config.vm.network :private_network,
+     virtualbox__intnet: "fm_test_lan",
+     ip: "172.16.0.10",
 
   # Default Provider Overrides
   # --------------------------
