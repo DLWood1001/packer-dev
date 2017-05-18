@@ -33,7 +33,7 @@
     py_link_dir: "/usr/local/bin"
 
   environment:
-    http_proxy: "{{http_proxy}}"
+    http_proxy: "{{http_proxy|default(None)}}"
 
   tasks:
     # Build & Install Python
