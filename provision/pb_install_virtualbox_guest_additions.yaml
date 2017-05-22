@@ -27,17 +27,20 @@
       - libmpc
       - mpfr
 
+    vbox_nox11: ''
+
   environment:
     http_proxy: "{{http_proxy}}"
 
   pre_tasks:
-    - name: Validate | Test if the target is graphical.
-      meta: end_play
-      when: vbox_target != 'graphical'
-
     - name: Validate | Test if the provider is supported.
       meta: end_play
       when: vbox_provider != 'virtualbox'
+
+    - name: Validate | Test if the target is graphical.
+      set_fact:
+        vbox_nox11: '--nox11'
+      when: vbox_target != 'graphical'
 
     - name: Validate | Test connectivity to the system.
       ping:
@@ -75,7 +78,7 @@
         state: mounted
 
     - name: Install | Install VirtualBox guest additions ISO.
-      command: ./VBoxLinuxAdditions.run
+      command: "./VBoxLinuxAdditions.run {{vbox_nox11}}"
       args:
         chdir: /tmp/vbox
 
