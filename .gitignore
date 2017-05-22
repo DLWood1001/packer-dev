@@ -9,3 +9,6 @@ packer_cache
 build.hwm
 build.pwd
 build.pwi
+
+# Ignore Whitney/Fusion Key
+provision/id_rsa.git
