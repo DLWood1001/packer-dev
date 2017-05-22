@@ -20,8 +20,8 @@
          "boot_command": [
             "<tab>",
             "<leftCtrlOn>ww<leftCtrlOff>",
-            "biosdevname=1 ",
-            "net.ifnames=1 ",
+            "biosdevname=0 ",
+            "net.ifnames=0 ",
             "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `name`}}-{{user `target`}}.cfg",
             "<enter>"
          ],
