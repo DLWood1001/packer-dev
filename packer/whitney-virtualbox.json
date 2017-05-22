@@ -1,0 +1,168 @@
+{
+   "builders": [
+      {
+         "name": "{{user `name`}}",
+         "output_directory": "output",
+         "http_directory": "kickstart",
+
+         "iso_url": "{{user `iso_path`}}/{{user `iso_file`}}",
+         "iso_checksum_type": "sha256",
+         "iso_checksum": "{{user `iso_checksum_sha256_hash`}}",
+
+         "type": "virtualbox-iso",
+         "headless": "{{user `headless`}}",
+         "guest_os_type": "RedHat_64",
+         "hard_drive_interface": "sata",
+         "vboxmanage": [
+            ["modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}"],
+            ["modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}"],
+            ["modifyvm", "{{.Name}}", "--natpf1", "ssh_ansible_port,tcp,127.0.0.1,{{user `ssh_ansible_port`}},,{{user `ssh_port`}}"]
+         ],
+
+         "boot_command": [
+            "<tab>",
+            "<leftCtrlOn>ww<leftCtrlOff>",
+            "biosdevname=0 ",
+            "net.ifnames=0 ",
+            "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `name`}}-{{user `target`}}.cfg",
+            "<enter>"
+         ],
+         "boot_wait": "5s",
+         "shutdown_command": "echo 'password' | sudo -S shutdown -h now",
+
+         "ssh_username": "{{user `ssh_username`}}",
+         "ssh_password": "{{user `ssh_password`}}",
+         "ssh_port": "{{user `ssh_port`}}",
+         "ssh_wait_timeout": "25m"
+      }
+   ],
+
+   "provisioners": [
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_users.yaml",
+         "extra_arguments": [
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_virtualbox_guest_additions.yaml",
+         "extra_arguments": [
+            "--extra-vars", "target={{user `target`}}",
+            "--extra-vars", "provider={{user `provider`}}",
+
+            "--extra-vars", "reboot_username={{user `ssh_username`}}",
+            "--extra-vars", "reboot_password={{user `ssh_password`}}",
+            "--extra-vars", "reboot_port={{user `ssh_ansible_port`}}",
+
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_epel.yaml",
+         "extra_arguments": [
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_whitney.yaml",
+         "extra_arguments": [
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_hostname.yaml",
+         "extra_arguments": [
+            "--extra-vars", "hostname={{user `name`}}",
+
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_fix_networking.yaml",
+         "extra_arguments": [
+            "--extra-vars", "provider={{user `provider`}}",
+
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_optimize_sshd.yaml",
+         "extra_arguments": [
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_optimize_grub.yaml",
+         "extra_arguments": [
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_optimize_yum.yaml",
+         "extra_arguments": [
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_optimize_disk_size.yaml",
+         "extra_arguments": [
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      }
+   ],
+
+   "post-processors": [
+      {
+        "type": "vagrant",
+        "output": "builds/{{user `name`}}.{{user `target`}}.{{user `provider`}}.box",
+        "vagrantfile_template": "./templates/vagrantfile-{{user `name`}}"
+      }
+   ],
+
+   "variables": {
+      "name": "whitney",
+      "target": "multi-user",
+      "provider": "virtualbox",
+      "media": "local",
+
+      "iso_file": "CentOS-7-x86_64-DVD-1611.iso",
+      "iso_path": "http://mirrors.kernel.org/centos/7.3.1611/isos/x86_64",
+      "iso_checksum_sha256_hash": "c455ee948e872ad2194bdddd39045b83634e8613249182b88f549bb2319d97eb",
+
+      "cpus": "4",
+      "memory": "4096",
+      "headless": "false",
+
+      "ssh_username": "root",
+      "ssh_password": "password",
+      "ssh_port": "22",
+      "ssh_ansible_port": "2323",
+
+      "sudo_password": "password",
+
+      "python_version": "2.7.11",
+
+      "http_proxy": "{{env `http_proxy`}}",
+      "https_proxy": "{{env `https_proxy`}}"
+   }
+}
