@@ -34,12 +34,12 @@ Vagrant.configure("2") do |config|
   # Whitney HTTP
   config.vm.network "forwarded_port",
     host: 4200,
-    guest: 4200
+    guest: 80
 
   # Whitney HTTPS
   config.vm.network "forwarded_port",
     host: 4201,
-    guest: 4201
+    guest: 443
 
   # Whitney <-> Robot/Fusion
   config.vm.network :private_network,
