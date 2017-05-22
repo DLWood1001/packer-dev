@@ -14,7 +14,7 @@
       - 'python-devel'
 
     f_git_username: git
-    f_git_host: 15.252.78.7
+    f_git_hostname: 15.252.78.7
     f_venv_username: admin
     f_install_directory: /opt/fusion
     f_download_directory: /tmp/fusion
@@ -51,7 +51,7 @@
   pre_tasks:
     - name: Check if Fusion host is reachable
       wait_for:
-        host: "{{f_git_host}}"
+        host: "{{f_git_hostname}}"
         port: 22
         timeout: 1
         delay: 0
@@ -95,7 +95,7 @@
         ssh_opts: >-
           -o StrictHostKeyChecking=no
           -o UserKnownHostsFile=/dev/null
-        repo: "{{f_git_username}}@{{f_git_host}}:/opt/git/fusion.git"
+        repo: "{{f_git_username}}@{{f_git_hostname}}:/opt/git/fusion.git"
         clone: true
         key_file: /tmp/id_rsa.git
         dest: "{{f_download_directory}}"
