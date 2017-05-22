@@ -1,0 +1,45 @@
+---
+- name: Install Pycharm 
+  hosts: "{{hosts|d(host|d('all'))}}"
+  gather_facts: no
+
+  vars:
+    pycharm_ver: "{{version|default('2017.1.2')}}"
+
+    pycharm_base: http://download.jetbrains.com/python
+    pycharm_file: "pycharm-community-{{pycharm_ver}}.tar.gz"
+    pycharm_url: "{{pycharm_base}}/{{pycharm_file}}"
+
+  environment:
+    http_proxy: "{{http_proxy|default(None)}}"
+
+  tasks:
+    - name: Download Pycharm
+      get_url:
+        url: "{{pycharm_url}}"
+        dest: "/tmp/{{pycharm_file}}"
+        validate_certs: no
+
+    - name: Extract Pycharm
+      unarchive:
+        src: "/tmp/{{pycharm_file}}"
+        dest: "/opt"
+        remote_src: yes
+        creates: "/opt/pycharm-community-{{pycharm_ver}}/bin/pycharm.sh"
+
+    - name: Create Pycharm Symbolic Links
+      file:
+        src: "/opt/pycharm-community-{{pycharm_ver}}/bin/pycharm.sh"
+        dest: "/usr/bin/pycharm"
+        state: link
+
+    - name: Install Pycharm Desktop File
+      template:
+        src: pycharm.desktop.j2
+        dest: "/usr/share/applications/pycharm.desktop"
+        mode: 0644
+
+    - name: Remove Pycharm Installation files
+      file:
+        path: "/tmp/{{pycharm_file}}"
+        state: absent
