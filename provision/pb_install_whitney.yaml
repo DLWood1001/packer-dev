@@ -5,7 +5,7 @@
   gather_facts: no
   vars:
     fm_git_username: git
-    fm_git_hostname: 15.252.78.7
+    fm_git_hostname: 15.252.78.99
 
     fm_download_base: /tmp
     fm_install_base: /opt
@@ -39,7 +39,8 @@
       - 'libuv'
       - 'nodejs'
 
-    fm_yum_build_deps: []
+    fm_yum_build_deps:
+      - 'git'
 
     fm_npm_install_deps:
       - '@angular/cli'
@@ -62,43 +63,43 @@
         state: present
       with_items: "{{fm_npm_install_deps}}"
 
-    # - name: Install Whitney Key File
-    #   copy:
-    #     src: ./id_packer.git
-    #     dest: /tmp/id_packer.git
-    #     mode: 0600
+    - name: Install Whitney Key File
+      copy:
+        src: ./id_rsa.git
+        dest: /tmp/id_rsa.git
+        mode: 0600
 
     # - name: Whitney Exists?
     #   stat:
     #     path: "{{fm_install_base}}/{{fm_directory}}"
     #   register: fm_stat
 
-    # - name: Download Fusion
-    #   git:
-    #     ssh_opts: >-
-    #       -o StrictHostKeyChecking=no
-    #       -o UserKnownHostsFile=/dev/null
-    #     repo: "{{fm_git_username}}@{{fm_git_hostname}}:/opt/git/whitney.git"
-    #     clone: true
-    #     key_file: /tmp/id_packer.git
-    #     dest: "{{fm_download_base}}"
-    #   when: not fm_stat.stat.exists
+    - name: Download Whitney
+      git:
+        ssh_opts: >-
+          -o StrictHostKeyChecking=no
+          -o UserKnownHostsFile=/dev/null
+        repo: "{{fm_git_username}}@{{fm_git_hostname}}:/opt/git/{{fm_directory}}"
+        clone: true
+        key_file: /tmp/id_rsa.git
+        dest: "{{fm_download_base}}/{{fm_directory}}"
+      # when: not fm_stat.stat.exists
 
-    - name: Download Whitney Install Files
-      copy:
-        src: ./whitney.tar.gz
-        dest: "{{fm_download_base}}/whitney.tar.gz"
-        remote_src: false
-        # creates: "{{fm_download_base}}/whitney.tar.gz"
+    # - name: Download Whitney Install Files
+    #   copy:
+    #     src: ./whitney.tar.gz
+    #     dest: "{{fm_download_base}}/whitney.tar.gz"
+    #     remote_src: false
+    #     # creates: "{{fm_download_base}}/whitney.tar.gz"
 
-    - name: Unarchive Whitney Install Files
-      unarchive:
-        src: "{{fm_download_base}}/whitney.tar.gz"
-        dest: "{{fm_download_base}}/"
-        remote_src: true
+    # - name: Unarchive Whitney Install Files
+    #   unarchive:
+    #     src: "{{fm_download_base}}/whitney.tar.gz"
+    #     dest: "{{fm_download_base}}/"
+    #     remote_src: true
 
     - name: Move Whitney Install Files
-      command: "cp -r {{fm_download_base}}/Whitney/{{fm_directory}} {{fm_install_base}}/"
+      command: "cp -r {{fm_download_base}}/{{fm_directory}} {{fm_install_base}}/"
       args:
         creates: "{{fm_install_base}}/{{fm_directory}}/README.md"
 
@@ -125,7 +126,7 @@
       lineinfile:
         path: "{{fm_install_base}}/{{fm_directory}}/package.json"
         regexp: "^( +)?\"start\": \"ng serve.*?\",$"
-        line: "\\1\"start\": \"ng serve --host 0.0.0.0 --ssl 1 --ssl-key 'ssl/{{fm_ssl_key_file}}' --ssl-cert 'ssl/{{fm_ssl_crt_file}}'\","
+        line: "\\1\"start\": \"ng serve --host 0.0.0.0 --port 80|ng serve --host 0.0.0.0 --port 443 --ssl 1 --ssl-key 'ssl/{{fm_ssl_key_file}}' --ssl-cert 'ssl/{{fm_ssl_crt_file}}'\","
         backrefs: true
         state: present
 
