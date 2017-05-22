@@ -9,7 +9,8 @@
     # Note(Dan): XXX Fix Me! need to figure out a way to get consistent device
     #            names.
     fn_interfaces:
-      virtualbox: enp0s3
+      # virtualbox: enp0s3
+      virtualbox: eth0
       libvirt: eth0
 
     fn_interface: "{{fn_interfaces[provider|default('virtualbox')]}}"
