@@ -13,26 +13,43 @@
       virtualbox: eth0
       libvirt: eth0
 
+    fn_device_timeout: 600
+
     fn_interface: "{{fn_interfaces[provider|default('virtualbox')]}}"
 
-
   tasks:
-    - name: Remove UUID
-      lineinfile:
-        path: "/etc/sysconfig/network-scripts/ifcfg-{{fn_interface}}"
-        regexp: ^#? *?UUID=".*?"$
-        line: UseDNS no
-        state: absent
+    # Notes (Dan):
+    #  UUID and HWADD may cause issues when virtual machine is moved around
+    #  between providers so they are removed. Also configuration is greatly
+    #  simplified.
+    - name: Replace ifcfg-<interface>.cfg
+      template:
+        src: ifcfg-interface.j2
+        dest: "/etc/sysconfig/network-scripts/ifcfg-{{fn_interface}}"
+        mode: 0644
 
-    - name: Remove Hardware MAC Address
-      lineinfile:
-        path: "/etc/sysconfig/network-scripts/ifcfg-{{fn_interface}}"
-        regexp: ^#? *?HWADDR=".*?"$
-        state: absent
+    # - name: Remove UUID
+    #   lineinfile:
+    #     path: "/etc/sysconfig/network-scripts/ifcfg-{{fn_interface}}"
+    #     regexp: ^#?\s*?UUID=".*?"$
+    #     state: absent
 
-    - name: Add Device
-      lineinfile:
-        path: "/etc/sysconfig/network-scripts/ifcfg-{{fn_interface}}"
-        regexp: ^#? *?DEVICE=".*?"$
-        line: "DEVICE=\"{{fn_interface}}\""
-        state: present
+    # - name: Remove Hardware MAC Address
+    #   lineinfile:
+    #     path: "/etc/sysconfig/network-scripts/ifcfg-{{fn_interface}}"
+    #     regexp: ^#? *?HWADDR=".*?"$
+    #     state: absent
+
+    # - name: Add Device
+    #   lineinfile:
+    #     path: "/etc/sysconfig/network-scripts/ifcfg-{{fn_interface}}"
+    #     regexp: ^#? *?DEVTIMEOUT=".*?"$
+    #     line: "DEVTIMEOUT=\"{{fn_device_timeout}}\""
+    #     state: present
+
+    # - name: Add Device
+    #   lineinfile:
+    #     path: "/etc/sysconfig/network-scripts/ifcfg-{{fn_interface}}"
+    #     regexp: ^#? *?DEVICE=".*?"$
+    #     line: "DEVICE=\"{{fn_interface}}\""
+    #     state: present
