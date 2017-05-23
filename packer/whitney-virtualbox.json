@@ -22,6 +22,7 @@
          "boot_command": [
             "<tab>",
             "<leftCtrlOn>ww<leftCtrlOff>",
+            "quiet ",
             "biosdevname=0 ",
             "net.ifnames=0 ",
             "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `name`}}-{{user `target`}}.cfg",
