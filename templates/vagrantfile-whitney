@@ -9,6 +9,10 @@
 provider_cpus = 1
 provider_memory = 1024
 
+whitney_host_http_port = 4200
+whitney_host_https_port = 4201
+whitney_guest_ip = "172.16.1.2"
+whitney_guest_netmask = "255.255.255.0"
 
 # Default Vagrant Settings
 # ------------------------
@@ -33,25 +37,26 @@ Vagrant.configure("2") do |config|
 
   # Whitney HTTP
   config.vm.network "forwarded_port",
-    host: 4200,
+    host: whitney_host_http_port,
     guest: 80
 
   # Whitney HTTPS
   config.vm.network "forwarded_port",
-    host: 4201,
+    host: whitney_host_https_port,
     guest: 443
 
+  # Whitney Network Adapters
+ 
   # Whitney <-> Robot/Fusion
   config.vm.network :private_network,
      virtualbox__intnet: "fm_test_lan",
      ip: "172.16.0.20",
-     netmask: "255.255.255.0"
+     netmask: "255.255.255.0" 
 
   # Whitney <-> Host
   config.vm.network :private_network,
-     name: "vboxnet0",
-     ip: "172.16.1.20",
-     netmask: "255.255.255.0"
+     ip: whitney_guest_ip,
+     netmask: whitney_guest_netmask
 
   # Default Provider Overrides
   # --------------------------
@@ -129,4 +134,15 @@ Vagrant.configure("2") do |config|
       config.proxy.https = ENV['https_proxy']
     end
   end
+
+  config.vm.post_up_message = <<-DOCUMENTATION
+    Whitney Web Interface URL
+     [http]
+      http://#{whitney_guest_ip} -or- http://127.0.0.1:#{whitney_host_http_port}
+     [https]
+      https://#{whitney_guest_ip} -or- https://127.0.0.1:#{whitney_host_https_port}
+
+    WARNING: Remember to make a proxy exception for address #{whitney_guest_ip} in your web browser.
+  DOCUMENTATION
 end
+
