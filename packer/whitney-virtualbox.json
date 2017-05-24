@@ -25,7 +25,7 @@
             "quiet ",
             "biosdevname=0 ",
             "net.ifnames=0 ",
-            "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `name`}}-{{user `target`}}.cfg",
+            "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `target`}}.cfg",
             "<enter>"
          ],
          "boot_wait": "5s",

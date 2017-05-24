@@ -9,26 +9,25 @@
          "iso_checksum_type": "sha256",
          "iso_checksum": "{{user `iso_checksum_sha256_hash`}}",
 
-         "type": "virtualbox-iso",
+         "type": "qemu",
+         "accelerator": "kvm",
          "headless": "{{user `headless`}}",
-         "guest_os_type": "RedHat_64",
-         "hard_drive_interface": "sata",
-         "vboxmanage": [
-            ["modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}"],
-            ["modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}"],
-            ["modifyvm", "{{.Name}}", "--natpf1", "ssh_ansible_port,tcp,127.0.0.1,{{user `ssh_ansible_port`}},,{{user `ssh_port`}}"]
+         "qemuargs": [
+            ["-smp", "{{user `cpus`}},sockets={{user `cpus`}},cores=1,threads=1"],
+            ["-m", "{{user `memory`}}M"]
          ],
 
          "boot_command": [
             "<tab>",
             "<leftCtrlOn>ww<leftCtrlOff>",
-            "biosdevname=1 ",
-            "net.ifnames=1 ",
+            "quiet ",
+            "biosdevname=0 ",
+            "net.ifnames=0 ",
             "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `target`}}.cfg",
             "<enter>"
          ],
          "boot_wait": "5s",
-         "shutdown_command": "echo 'password' | sudo -S shutdown -h now",
+         "shutdown_command": "echo '{{user `ssh_password`}}' | sudo -S shutdown -h now",
 
          "ssh_username": "{{user `ssh_username`}}",
          "ssh_password": "{{user `ssh_password`}}",
@@ -73,28 +72,8 @@
       },
       {
          "type": "ansible",
-         "playbook_file": "./provision/pb_install_python_alt.yaml",
-         "extra_arguments": [
-            "--extra-vars", "version={{user `python_version`}}",
-
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
-      {
-         "type": "ansible",
          "playbook_file": "./provision/pb_install_fusion.yaml",
          "extra_arguments": [
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_install_pycharm.yaml",
-         "extra_arguments": [
-            "--extra-vars", "version={{user `pycharm_version`}}",
-
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
@@ -171,8 +150,8 @@
 
    "variables": {
       "name": "centos-7.3",
-      "target": "graphical",
-      "provider": "virtualbox",
+      "target": "multi-user",
+      "provider": "libvirt",
       "media": "local",
 
       "iso_file": "CentOS-7-x86_64-DVD-1611.iso",
@@ -191,7 +170,6 @@
       "sudo_password": "password",
 
       "python_version": "2.7.11",
-      "pycharm_version": "2017.1.2",
 
       "http_proxy": "{{env `http_proxy`}}",
       "https_proxy": "{{env `https_proxy`}}"

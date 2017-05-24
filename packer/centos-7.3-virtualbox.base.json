@@ -22,9 +22,10 @@
          "boot_command": [
             "<tab>",
             "<leftCtrlOn>ww<leftCtrlOff>",
-            "biosdevname=1 ",
-            "net.ifnames=1 ",
-            "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `name`}}-{{user `target`}}.base.cfg",
+            "quiet ",
+            "biosdevname=0 ",
+            "net.ifnames=0 ",
+            "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `target`}}.cfg",
             "<enter>"
          ],
          "boot_wait": "5s",
@@ -40,7 +41,7 @@
    "provisioners": [
       {
          "type": "ansible",
-         "playbook_file": "./provision/pb_install_users.yaml",
+         "playbook_file": "./provision/pb_optimize_sshd.yaml",
          "extra_arguments": [
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
@@ -48,10 +49,8 @@
       },
       {
          "type": "ansible",
-         "playbook_file": "./provision/pb_install_gnome_preferences.yaml",
+         "playbook_file": "./provision/pb_install_users.yaml",
          "extra_arguments": [
-            "--extra-vars", "target={{user `target`}}",
-
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
@@ -62,14 +61,6 @@
          "extra_arguments": [
             "--extra-vars", "provider={{user `provider`}}",
 
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_optimize_sshd.yaml",
-         "extra_arguments": [
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
@@ -110,7 +101,7 @@
 
    "variables": {
       "name": "centos-7.3",
-      "target": "graphical",
+      "target": "multi-user",
       "provider": "virtualbox",
       "media": "local",
 
