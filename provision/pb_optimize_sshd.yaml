@@ -22,3 +22,7 @@
         line: GSSAPIAuthentication no
         state: present
 
+    - name: Restart SSHD Service
+      service:
+        name: sshd
+        state: restarted
