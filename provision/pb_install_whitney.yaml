@@ -49,6 +49,23 @@
   environment:
     http_proxy: "{{http_proxy|default(None)}}"
 
+  pre_tasks:
+    - name: Check if Whitney host is reachable
+      wait_for:
+        host: "{{fm_git_hostname}}"
+        port: 22
+        timeout: 1
+        delay: 0
+        state: started
+      register: whitney_reachable
+      failed_when: false
+      changed_when: false
+      ignore_errors: true
+
+    - name: Validate Whitney host reachability 
+      meta: end_play
+      when: whitney_reachable.state is not defined
+
   tasks:
     - name: Install Required Dependencies
       yum:
@@ -69,11 +86,6 @@
         dest: /tmp/id_rsa.git
         mode: 0600
 
-    # - name: Whitney Exists?
-    #   stat:
-    #     path: "{{fm_install_base}}/{{fm_directory}}"
-    #   register: fm_stat
-
     - name: Download Whitney
       git:
         ssh_opts: >-
@@ -83,20 +95,6 @@
         clone: true
         key_file: /tmp/id_rsa.git
         dest: "{{fm_download_base}}/{{fm_directory}}"
-      # when: not fm_stat.stat.exists
-
-    # - name: Download Whitney Install Files
-    #   copy:
-    #     src: ./whitney.tar.gz
-    #     dest: "{{fm_download_base}}/whitney.tar.gz"
-    #     remote_src: false
-    #     # creates: "{{fm_download_base}}/whitney.tar.gz"
-
-    # - name: Unarchive Whitney Install Files
-    #   unarchive:
-    #     src: "{{fm_download_base}}/whitney.tar.gz"
-    #     dest: "{{fm_download_base}}/"
-    #     remote_src: true
 
     - name: Move Whitney Install Files
       command: "cp -r {{fm_download_base}}/{{fm_directory}} {{fm_install_base}}/"
