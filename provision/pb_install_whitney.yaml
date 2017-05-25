@@ -11,26 +11,30 @@
     fm_install_base: /opt
     fm_directory: Code---UI
 
-    fm_ssl_country: US
-    fm_ssl_state: Massachusetts
-    fm_ssl_locality: Littleton
-    fm_ssl_o: HPE
-    fm_ssl_ou: DCIG
-    fm_ssl_cn: whitney.local
-    fm_ssl_email: daniel.l.wood@hpe.com
-    fm_ssl_subject:
-      - "C={{fm_ssl_country}}"
-      - "ST={{fm_ssl_state}}"
-      - "L={{fm_ssl_locality}}"
-      - "O={{fm_ssl_o}}"
-      - "OU={{fm_ssl_ou}}"
-      - "CN={{fm_ssl_cn}}"
-      - "emailAddress={{fm_ssl_email}}"
-    fm_ssl_valid_days: 3560
-    fm_ssl_key_type: rsa
-    fm_ssl_key_size: 4096
-    fm_ssl_key_file: server.key
-    fm_ssl_crt_file: server.crt
+    # fm_ssl_country: US
+    # fm_ssl_state: Massachusetts
+    # fm_ssl_locality: Littleton
+    # fm_ssl_o: HPE
+    # fm_ssl_ou: DCIG
+    # fm_ssl_cn: whitney.local
+    # fm_ssl_email: daniel.l.wood@hpe.com
+    # fm_ssl_subject:
+    #   - "C={{fm_ssl_country}}"
+    #   - "ST={{fm_ssl_state}}"
+    #   - "L={{fm_ssl_locality}}"
+    #   - "O={{fm_ssl_o}}"
+    #   - "OU={{fm_ssl_ou}}"
+    #   - "CN={{fm_ssl_cn}}"
+    #   - "emailAddress={{fm_ssl_email}}"
+    # fm_ssl_valid_days: 3560
+    # fm_ssl_key_type: rsa
+    # fm_ssl_key_size: 4096
+    # fm_ssl_key_file: server.key
+    # fm_ssl_crt_file: server.crt
+
+    fm_ssl_files:
+      - whitney.cert.pem
+      - whitney.key.pem
 
     fm_autostart_name: whitney
     fm_yum_install_deps:
@@ -106,25 +110,31 @@
         path: "{{fm_install_base}}/{{fm_directory}}/ssl"
         state: directory
 
-    - name: Create SSL Certificate - Whitney SSL
-      command: >-
-        openssl req
-        -x509
-        -nodes
-        -newkey {{fm_ssl_key_type}}:{{fm_ssl_key_size}}
-        -keyout {{fm_ssl_key_file}}
-        -out {{fm_ssl_crt_file}}
-        -days {{fm_ssl_valid_days}}
-        -subj '/{{fm_ssl_subject|join('/')}}'
-      args:
-        chdir: "{{fm_install_base}}/{{fm_directory}}/ssl"
-        creates: "{{fm_install_base}}/{{fm_directory}}/ssl/{{fm_ssl_key_file}}"
+    - name: Install Whitney SSL Files
+      copy:
+        src: "./{{item}}"
+        dest: "{{fm_install_base}}/{{fm_directory}}/ssl/{{item}}"
+      with_items: "{{fm_ssl_files}}"
+
+    # - name: Create SSL Certificate - Whitney SSL
+    #   command: >-
+    #     openssl req
+    #     -x509
+    #     -nodes
+    #     -newkey {{fm_ssl_key_type}}:{{fm_ssl_key_size}}
+    #     -keyout {{fm_ssl_key_file}}
+    #     -out {{fm_ssl_crt_file}}
+    #     -days {{fm_ssl_valid_days}}
+    #     -subj '/{{fm_ssl_subject|join('/')}}'
+    #   args:
+    #     chdir: "{{fm_install_base}}/{{fm_directory}}/ssl"
+    #     creates: "{{fm_install_base}}/{{fm_directory}}/ssl/{{fm_ssl_key_file}}"
 
     - name: Set Whitney IP and SSL Cert
       lineinfile:
         path: "{{fm_install_base}}/{{fm_directory}}/package.json"
         regexp: "^( +)?\"start\": \"ng serve.*?\",$"
-        line: "\\1\"start\": \"ng serve --host 0.0.0.0 --port 80|ng serve --host 0.0.0.0 --port 443 --ssl 1 --ssl-key 'ssl/{{fm_ssl_key_file}}' --ssl-cert 'ssl/{{fm_ssl_crt_file}}'\","
+        line: "\\1\"start\": \"ng serve --host 0.0.0.0 --port 80|ng serve --host 0.0.0.0 --port 443 --ssl 1 --ssl-key 'ssl/{{fm_ssl_files[1]}}' --ssl-cert 'ssl/{{fm_ssl_files[0]}}'\","
         backrefs: true
         state: present
 
