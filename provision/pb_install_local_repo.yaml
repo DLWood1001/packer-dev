@@ -1,0 +1,28 @@
+---
+- name: Install Local Repo
+  hosts: "{{hosts|d(host|d('all'))}}"
+  gather_facts: no
+  vars:
+    lr_dev: /dev/sr0
+
+  environment:
+    http_proxy: "{{http_proxy|default(None)}}"
+
+  tasks:
+    - name: Install CentOS Local Repository
+      yum_repository:
+        name: local-repo
+        description: CentOS Local Repository
+        baseurl: file:///mnt/local-repo
+        gpgkey: file:///mnt/local-repo/RPM-GPG-KEY-CentOS-7
+        enabled: true
+        gpgcheck: true
+        state: present
+
+    - name: Mount | Mount VirtualBox guest additions ISO.
+      mount:
+        path: /mnt/local-repo
+        src: "{{lr_dev}}"
+        opts: loop
+        fstype: iso9660
+        state: mounted
