@@ -11,6 +11,27 @@
     fm_install_base: /opt
     fm_directory: Code---UI
 
+    fm_serve_host: 0.0.0.0
+    fm_serve_ports: 80
+      - 80
+      - 443
+
+    fm_serve_commands:
+      - >-
+        ng serve
+        --host {{fm_serve_host}}
+        --port {{fm_serve_ports[0]}}
+
+      - >-
+        ng serve
+        --host {{fm_serve_host}}
+        --port {{fm_serve_ports[1]}}
+        --ssl 1
+        --ssl-key 'ssl/{{fm_ssl_key_file}}'
+        --ssl-cert 'ssl/{{fm_ssl_crt_file}}'
+
+    fm_serve_command: "{{fm_serve_commands|join('&')}}"
+
     fm_ssl_country: US
     fm_ssl_state: Massachusetts
     fm_ssl_locality: Littleton
@@ -123,8 +144,8 @@
     - name: Set Whitney IP and SSL Cert
       lineinfile:
         path: "{{fm_install_base}}/{{fm_directory}}/package.json"
-        regexp: "^( +)?\"start\": \"ng serve.*?\",$"
-        line: "\\1\"start\": \"ng serve --host 0.0.0.0 --port 80|ng serve --host 0.0.0.0 --port 443 --ssl 1 --ssl-key 'ssl/{{fm_ssl_key_file}}' --ssl-cert 'ssl/{{fm_ssl_crt_file}}'\","
+        regexp: "^(\s+)?\"start\": \"ng serve.*?\",$"
+        line: "\\1\"start\": \"{{fm_serve_command}}\","
         backrefs: true
         state: present
 
