@@ -49,6 +49,26 @@
       },
       {
          "type": "ansible",
+         "playbook_file": "./provision/pb_fix_networking.yaml",
+         "extra_arguments": [
+            "--extra-vars", "provider={{user `provider`}}",
+
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_local_repo.yaml",
+         "extra_arguments": [
+            "--extra-vars", "media={{user `media`}}",
+
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+      {
+         "type": "ansible",
          "playbook_file": "./provision/pb_install_users.yaml",
          "extra_arguments": [
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
@@ -57,9 +77,15 @@
       },
       {
          "type": "ansible",
-         "playbook_file": "./provision/pb_fix_networking.yaml",
+         "playbook_file": "./provision/pb_install_virtualbox_guest_additions.yaml",
          "extra_arguments": [
+            "--extra-vars", "target={{user `target`}}",
             "--extra-vars", "provider={{user `provider`}}",
+            "--extra-vars", "media={{user `media`}}",
+
+            "--extra-vars", "reboot_username={{user `ssh_username`}}",
+            "--extra-vars", "reboot_password={{user `ssh_password`}}",
+            "--extra-vars", "reboot_port={{user `ssh_ansible_port`}}",
 
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
