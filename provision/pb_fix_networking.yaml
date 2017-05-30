@@ -18,6 +18,11 @@
     fn_interface: "{{fn_interfaces[provider|default('virtualbox')]}}"
 
   tasks:
+    - name: Remove old ifcfg-<interface>.cfg
+      file:
+        path: "/etc/sysconfig/network-scripts/ifcfg-{{fn_interface}}"
+        state: absent
+
     # Notes (Dan):
     #  UUID and HWADD may cause issues when virtual machine is moved around
     #  between providers so they are removed. Also configuration is greatly
