@@ -19,7 +19,7 @@
         gpgcheck: true
         state: present
 
-    - name: Mount | Mount VirtualBox guest additions ISO.
+    - name: Mount CentOS Local Repository 
       mount:
         path: /mnt/local-repo
         src: "{{lr_dev}}"
