@@ -154,7 +154,7 @@
     - name: Set Whitney IP and SSL Cert
       lineinfile:
         path: "{{fm_install_base}}/{{fm_directory}}/package.json"
-        regexp: "^(\s+)?\"start\": \"ng serve.*?\",$"
+        regexp: "^(\\s+)?\"start\": \"ng serve.*?\",$"
         line: "\\1\"start\": \"{{fm_serve_command}}\","
         backrefs: true
         state: present
