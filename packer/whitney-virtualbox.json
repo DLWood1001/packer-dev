@@ -41,12 +41,44 @@
    "provisioners": [
       {
          "type": "ansible",
+         "playbook_file": "./provision/pb_optimize_sshd.yaml",
+         "extra_arguments": [
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_fix_networking.yaml",
+         "extra_arguments": [
+            "--extra-vars", "provider={{user `provider`}}",
+
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_local_repo.yaml",
+         "extra_arguments": [
+            "--extra-vars", "media={{user `media`}}",
+
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+
+      {
+         "type": "ansible",
          "playbook_file": "./provision/pb_install_users.yaml",
          "extra_arguments": [
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
       },
+
       {
          "type": "ansible",
          "playbook_file": "./provision/pb_install_virtualbox_guest_additions.yaml",
@@ -62,6 +94,7 @@
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
       },
+
       {
          "type": "ansible",
          "playbook_file": "./provision/pb_install_epel.yaml",
@@ -70,6 +103,7 @@
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
       },
+
       {
          "type": "ansible",
          "playbook_file": "./provision/pb_install_whitney.yaml",
@@ -78,6 +112,7 @@
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
       },
+
       {
          "type": "ansible",
          "playbook_file": "./provision/pb_install_hostname.yaml",
@@ -88,24 +123,7 @@
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
       },
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_fix_networking.yaml",
-         "extra_arguments": [
-            "--extra-vars", "provider={{user `provider`}}",
 
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_optimize_sshd.yaml",
-         "extra_arguments": [
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
       {
          "type": "ansible",
          "playbook_file": "./provision/pb_optimize_grub.yaml",
@@ -114,6 +132,7 @@
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
       },
+
       {
          "type": "ansible",
          "playbook_file": "./provision/pb_optimize_yum.yaml",
@@ -122,6 +141,7 @@
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
       },
+
       {
          "type": "ansible",
          "playbook_file": "./provision/pb_optimize_disk_size.yaml",
@@ -144,7 +164,7 @@
       "name": "whitney",
       "target": "multi-user",
       "provider": "virtualbox",
-      "media": "local",
+      "media": "remote",
 
       "iso_file": "CentOS-7-x86_64-DVD-1611.iso",
       "iso_path": "http://mirrors.kernel.org/centos/7.3.1611/isos/x86_64",
