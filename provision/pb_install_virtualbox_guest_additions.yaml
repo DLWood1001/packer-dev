@@ -68,8 +68,8 @@
     - name: Install | Install Dependencies.
       package:
         name: "{{item}}"
-        enablerepo: "{{vbox_enable_repos|default('*')}}"
-        disablerepo: "{{vbox_disable_repos|default('')}}"
+        enablerepo: "{{vbox_enable_repos|default(omit)}}"
+        disablerepo: "{{vbox_disable_repos|default(omit)}}"
         state: present
       with_items: "{{vbox_dependencies}}"
 
