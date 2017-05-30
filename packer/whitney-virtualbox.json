@@ -23,6 +23,7 @@
             "<tab>",
             "<leftCtrlOn>ww<leftCtrlOff>",
             "quiet ",
+            "ipv6.disable=1 ",
             "biosdevname=0 ",
             "net.ifnames=0 ",
             "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `target`}}.cfg",
@@ -41,6 +42,34 @@
    "provisioners": [
       {
          "type": "ansible",
+         "playbook_file": "./provision/pb_optimize_sshd.yaml",
+         "extra_arguments": [
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_fix_networking.yaml",
+         "extra_arguments": [
+            "--extra-vars", "provider={{user `provider`}}",
+
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_local_repo.yaml",
+         "extra_arguments": [
+            "--extra-vars", "media={{user `media`}}",
+
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+      {
+         "type": "ansible",
          "playbook_file": "./provision/pb_install_users.yaml",
          "extra_arguments": [
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
@@ -53,6 +82,7 @@
          "extra_arguments": [
             "--extra-vars", "target={{user `target`}}",
             "--extra-vars", "provider={{user `provider`}}",
+            "--extra-vars", "media={{user `media`}}",
 
             "--extra-vars", "reboot_username={{user `ssh_username`}}",
             "--extra-vars", "reboot_password={{user `ssh_password`}}",
@@ -84,24 +114,6 @@
          "extra_arguments": [
             "--extra-vars", "hostname={{user `name`}}",
 
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_fix_networking.yaml",
-         "extra_arguments": [
-            "--extra-vars", "provider={{user `provider`}}",
-
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_optimize_sshd.yaml",
-         "extra_arguments": [
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
