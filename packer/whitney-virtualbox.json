@@ -2,6 +2,7 @@
    "builders": [
       {
          "name": "{{user `name`}}",
+         "vm_name": "{{user `name`}}.{{user `provider`}}",
          "output_directory": "output",
          "http_directory": "kickstart",
 
@@ -16,8 +17,23 @@
          "vboxmanage": [
             ["modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}"],
             ["modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}"],
-            ["modifyvm", "{{.Name}}", "--natpf1", "ssh_ansible_port,tcp,127.0.0.1,{{user `ssh_ansible_port`}},,{{user `ssh_port`}}"]
+
+            ["modifyvm", "{{.Name}}", "--nic1", "nat"],
+            ["modifyvm", "{{.Name}}", "--natpf1", "whitney_http_port,tcp,127.0.0.1,8080,,80"],
+            ["modifyvm", "{{.Name}}", "--natpf1", "whitney_https_port,tcp,127.0.0.1,8443,,443"],
+            ["modifyvm", "{{.Name}}", "--cableconnected1", "on"],
+
+            ["modifyvm", "{{.Name}}", "--natpf1", "ansible_ssh_port,tcp,127.0.0.1,{{user `ssh_ansible_port`}},,{{user `ssh_port`}}"],
+
+            ["modifyvm", "{{.Name}}", "--nic2", "bridged"],
+            ["modifyvm", "{{.Name}}", "--bridgeadapter2", "wlp61s0"],
+            ["modifyvm", "{{.Name}}", "--cableconnected2", "on"]
          ],
+         "post_shutdown_delay": "30s",
+         "vboxmanage_post": [
+            ["modifyvm", "{{.Name}}", "--natpf1", "delete", "ansible_ssh_port"]
+         ],
+         "format": "ova",
 
          "boot_command": [
             "<tab>",
@@ -159,12 +175,13 @@
       {
         "type": "vagrant",
         "output": "builds/{{user `name`}}.{{user `target`}}.{{user `provider`}}.box",
+        "keep_input_artifact": true,
         "vagrantfile_template": "./templates/vagrantfile-{{user `name`}}"
       }
    ],
 
    "variables": {
-      "name": "whitney",
+      "name": "smartrack",
       "target": "multi-user",
       "provider": "virtualbox",
       "media": "remote",

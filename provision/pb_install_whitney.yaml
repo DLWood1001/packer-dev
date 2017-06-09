@@ -12,7 +12,7 @@
     fm_directory: Code---UI
 
     fm_serve_host: 0.0.0.0
-    fm_serve_ports: 80
+    fm_serve_ports:
       - 80
       - 443
 
@@ -75,21 +75,21 @@
     http_proxy: "{{http_proxy|default(None)}}"
 
   pre_tasks:
-    - name: Check if Whitney host is reachable
-      wait_for:
-        host: "{{fm_git_hostname}}"
-        port: 22
-        timeout: 1
-        delay: 0
-        state: started
-      register: whitney_reachable
-      failed_when: false
-      changed_when: false
-      ignore_errors: true
+    # - name: Check if Whitney host is reachable
+    #   wait_for:
+    #     host: "{{fm_git_hostname}}"
+    #     port: 22
+    #     timeout: 1
+    #     delay: 0
+    #     state: started
+    #   register: whitney_reachable
+    #   failed_when: false
+    #   changed_when: false
+    #   ignore_errors: true
 
-    - name: Validate Whitney host reachability 
-      meta: end_play
-      when: whitney_reachable.state is not defined
+    # - name: Validate Whitney host reachability 
+    #   meta: end_play
+    #   when: whitney_reachable.state is not defined
 
   tasks:
     - name: Install Required Dependencies
@@ -111,15 +111,29 @@
         dest: /tmp/id_rsa.git
         mode: 0600
 
-    - name: Download Whitney
-      git:
-        ssh_opts: >-
-          -o StrictHostKeyChecking=no
-          -o UserKnownHostsFile=/dev/null
-        repo: "{{fm_git_username}}@{{fm_git_hostname}}:/opt/git/{{fm_directory}}"
-        clone: true
-        key_file: /tmp/id_rsa.git
-        dest: "{{fm_download_base}}/{{fm_directory}}"
+    # - name: Download Whitney
+    #   git:
+    #     ssh_opts: >-
+    #       -o StrictHostKeyChecking=no
+    #       -o UserKnownHostsFile=/dev/null
+    #     repo: "{{fm_git_username}}@{{fm_git_hostname}}:/opt/git/{{fm_directory}}"
+    #     clone: true
+    #     key_file: /tmp/id_rsa.git
+    #     dest: "{{fm_download_base}}/{{fm_directory}}"
+
+    - name: Copy SmartRack Install Files
+      copy:
+        src: ./SmartRack.tar.gz
+        dest: "{{fm_download_base}}/SmartRack.tar.gz"
+
+    - pause:
+        minutes: 10
+
+    - name: Unzip SmartRack Install Files
+      unarchive:
+        src: "{{fm_download_base}}/SmartRack.tar.gz"
+        dest: "{{fm_install_base}}"
+        remote_src: false
 
     - name: Move Whitney Install Files
       command: "cp -r {{fm_download_base}}/{{fm_directory}} {{fm_install_base}}/"
