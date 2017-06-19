@@ -2,8 +2,8 @@
    "builders": [
       {
          "name": "{{user `name`}}",
-         "vm_name": "{{user `name`}}.{{user `provider`}}",
-         "output_directory": "output",
+         "vm_name": "{{user `file`}}",
+         "output_directory": "builds/ova",
          "http_directory": "kickstart",
 
          "iso_url": "{{user `iso_path`}}/{{user `iso_file`}}",
@@ -174,7 +174,7 @@
    "post-processors": [
       {
         "type": "vagrant",
-        "output": "builds/{{user `name`}}.{{user `target`}}.{{user `provider`}}.box",
+        "output": "builds/box/{{user `file`}}.box",
         "keep_input_artifact": true,
         "vagrantfile_template": "./templates/vagrantfile-{{user `name`}}"
       }
@@ -184,6 +184,8 @@
       "name": "smartrack",
       "target": "multi-user",
       "provider": "virtualbox",
+      "file": "{{user `name`}}.{{user `target`}}.{{user `provider`}}.{{isotime `1970-01-01_000000`}}",
+
       "media": "remote",
 
       "iso_file": "CentOS-7-x86_64-DVD-1611.iso",
