@@ -32,6 +32,7 @@
 
   environment:
     http_proxy: "{{http_proxy|default(none)}}"
+    https_proxy: "{{https_proxy|default(none)}}"
 
   pre_tasks:
     - name: Validate | Test if the provider is supported.

@@ -10,6 +10,7 @@
 
   environment:
     http_proxy: "{{http_proxy|default(None)}}"
+    https_proxy: "{{https_proxy|default(None)}}"
 
   pre_tasks:
     - name: Check CentOS local media is requested.
