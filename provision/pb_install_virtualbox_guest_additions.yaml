@@ -102,7 +102,7 @@
         path: "/tmp/{{vbox_iso}}"
         state: absent
 
-    - name: Clean Python Install Dependencies
+    - name: Clean VirtualBox guest additions Install Dependencies
       package:
         name: "{{item}}"
         state: present
