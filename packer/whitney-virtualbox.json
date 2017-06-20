@@ -23,7 +23,7 @@
             ["modifyvm", "{{.Name}}", "--natpf1", "whitney_https_port,tcp,127.0.0.1,8443,,443"],
             ["modifyvm", "{{.Name}}", "--cableconnected1", "on"],
 
-            ["modifyvm", "{{.Name}}", "--natpf1", "ansible_ssh_port,tcp,127.0.0.1,{{user `ssh_ansible_port`}},,{{user `ssh_port`}}"],
+            ["modifyvm", "{{.Name}}", "--natpf1", "ansible_ssh_port,tcp,127.0.0.1,{{user `ansible_ssh_port`}},,{{user `ssh_port`}}"],
 
             ["modifyvm", "{{.Name}}", "--nic2", "bridged"],
             ["modifyvm", "{{.Name}}", "--bridgeadapter2", "wlp61s0"],
@@ -107,7 +107,7 @@
 
             "--extra-vars", "reboot_username={{user `ssh_username`}}",
             "--extra-vars", "reboot_password={{user `ssh_password`}}",
-            "--extra-vars", "reboot_port={{user `ssh_ansible_port`}}",
+            "--extra-vars", "reboot_port={{user `ansible_ssh_port`}}",
 
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
@@ -198,9 +198,9 @@
       "ssh_username": "root",
       "ssh_password": "password",
       "ssh_port": "22",
-      "ssh_ansible_port": "2323",
-
       "sudo_password": "password",
+
+      "ansible_ssh_port": "2323",
 
       "python_version": "2.7.11",
 
