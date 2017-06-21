@@ -26,7 +26,7 @@
             ["modifyvm", "{{.Name}}", "--natpf1", "ansible_ssh_port,tcp,127.0.0.1,{{user `ansible_ssh_port`}},,{{user `ssh_port`}}"],
 
             ["modifyvm", "{{.Name}}", "--nic2", "bridged"],
-            ["modifyvm", "{{.Name}}", "--bridgeadapter2", "wlp61s0"],
+            ["modifyvm", "{{.Name}}", "--bridgeadapter2", "lo"],
             ["modifyvm", "{{.Name}}", "--cableconnected2", "on"]
          ],
          "post_shutdown_delay": "30s",
