@@ -26,8 +26,8 @@
             ["modifyvm", "{{.Name}}", "--natpf1", "ansible_ssh_port,tcp,127.0.0.1,{{user `ansible_ssh_port`}},,{{user `ssh_port`}}"],
 
             ["modifyvm", "{{.Name}}", "--nic2", "bridged"],
-            ["modifyvm", "{{.Name}}", "--bridgeadapter2", "lo"],
-            ["modifyvm", "{{.Name}}", "--cableconnected2", "off"]
+            ["modifyvm", "{{.Name}}", "--bridgeadapter2", "{{user `bridge_adapter2`}}"],
+            ["modifyvm", "{{.Name}}", "--cableconnected2", "on"]
          ],
          "post_shutdown_delay": "30s",
          "vboxmanage_post": [
@@ -205,6 +205,8 @@
       "python_version": "2.7.11",
 
       "http_proxy": "{{env `http_proxy`}}",
-      "https_proxy": "{{env `https_proxy`}}"
+      "https_proxy": "{{env `https_proxy`}}",
+
+      "bridge_adapter2": "lo"
    }
 }
