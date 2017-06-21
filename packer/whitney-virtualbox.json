@@ -27,7 +27,7 @@
 
             ["modifyvm", "{{.Name}}", "--nic2", "bridged"],
             ["modifyvm", "{{.Name}}", "--bridgeadapter2", "lo"],
-            ["modifyvm", "{{.Name}}", "--cableconnected2", "on"]
+            ["modifyvm", "{{.Name}}", "--cableconnected2", "off"]
          ],
          "post_shutdown_delay": "30s",
          "vboxmanage_post": [
