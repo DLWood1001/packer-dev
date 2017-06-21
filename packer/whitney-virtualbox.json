@@ -2,7 +2,7 @@
    "builders": [
       {
          "name": "{{user `name`}}",
-         "vm_name": "{{user `name`}}.{{user `target`}}.{{user `provider`}}",
+         "vm_name": "{{user `name`}}.{{user `provider`}}",
          "output_directory": "builds/ova",
          "http_directory": "kickstart",
 
@@ -174,7 +174,7 @@
    "post-processors": [
       {
         "type": "vagrant",
-        "output": "builds/box/{{user `name`}}.{{user `target`}}.{{user `provider`}}.box",
+        "output": "builds/box/{{user `name`}}.{{user `provider`}}.box",
         "keep_input_artifact": true,
         "vagrantfile_template": "./templates/vagrantfile-{{user `name`}}"
       }
