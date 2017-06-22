@@ -176,6 +176,8 @@
       npm:
         path: "{{fm_install_base}}/{{fm_directory}}"
         state: present
+      async: 1800
+      poll: 10
 
     - name: Gather Facts Whitney - Autostart
       command: autostart check -n {{fm_autostart_name}}
