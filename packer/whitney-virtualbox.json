@@ -34,7 +34,7 @@
             ["modifyvm", "{{.Name}}", "--natpf1", "delete", "ansible"]
          ],
 
-         "http_directory": "kicksart",
+         "http_directory": "kickstart",
          "boot_wait": "5s",
          "boot_command": [
             "<tab>",
