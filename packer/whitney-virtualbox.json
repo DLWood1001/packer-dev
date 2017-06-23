@@ -2,13 +2,13 @@
    "builders": [
       {
          "name": "{{user `name`}}",
-         "vm_name": "{{user `name`}}.{{user `provider`}}",
-         "output_directory": "builds/ova",
-         "http_directory": "kickstart",
 
          "iso_url": "{{user `iso_path`}}/{{user `iso_file`}}",
          "iso_checksum_type": "sha256",
          "iso_checksum": "{{user `iso_checksum_sha256_hash`}}",
+
+         "guest_additions_mode": "upload",
+         "guest_additions_path": "/tmp/VBoxGuestAdditions_{{.Version}}.iso",
 
          "type": "virtualbox-iso",
          "headless": "{{user `headless`}}",
@@ -23,19 +23,19 @@
             ["modifyvm", "{{.Name}}", "--cableconnected1", "on"],
             ["modifyvm", "{{.Name}}", "--natpf1", "whitney_http_port,tcp,127.0.0.1,8080,,80"],
             ["modifyvm", "{{.Name}}", "--natpf1", "whitney_https_port,tcp,127.0.0.1,8443,,443"],
-            ["modifyvm", "{{.Name}}", "--natpf1", "ansible_ssh_port,tcp,127.0.0.1,{{user `ansible_ssh_port`}},,{{user `ssh_port`}}"],
+            ["modifyvm", "{{.Name}}", "--natpf1", "ansible,tcp,127.0.0.1,{{user `ansible_ssh_port`}},,22"],
 
             ["modifyvm", "{{.Name}}", "--nic2", "bridged"],
             ["modifyvm", "{{.Name}}", "--nictype2", "virtio"],
             ["modifyvm", "{{.Name}}", "--bridgeadapter2", "{{user `bridge_adapter2`}}"],
             ["modifyvm", "{{.Name}}", "--cableconnected2", "on"]
          ],
-         "post_shutdown_delay": "30s",
          "vboxmanage_post": [
-            ["modifyvm", "{{.Name}}", "--natpf1", "delete", "ansible_ssh_port"]
+            ["modifyvm", "{{.Name}}", "--natpf1", "delete", "ansible"]
          ],
-         "format": "ova",
 
+         "http_directory": "kicksart",
+         "boot_wait": "5s",
          "boot_command": [
             "<tab>",
             "<leftCtrlOn>ww<leftCtrlOff>",
@@ -46,8 +46,13 @@
             "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `target`}}.cfg",
             "<enter>"
          ],
-         "boot_wait": "5s",
+
+         "post_shutdown_delay": "30s",
          "shutdown_command": "echo 'password' | sudo -S shutdown -h now",
+
+         "format": "ova",
+         "vm_name": "{{user `name`}}.{{user `provider`}}",
+         "output_directory": "builds/ova",
 
          "ssh_username": "{{user `ssh_username`}}",
          "ssh_password": "{{user `ssh_password`}}",
