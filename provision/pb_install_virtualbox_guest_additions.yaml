@@ -74,10 +74,16 @@
         state: present
       with_items: "{{vbox_dependencies}}"
 
+    - name: Verify VBoxGuestAdditions.iso exists.
+      stat:
+        path: "/tmp/{{vbox_iso}}"
+      register: vbox_stat
+
     - name: Get | Download VirtualBox guest additions ISO to the system.
       get_url:
         url: "{{vbox_url}}"
         dest: "/tmp"
+      when: not vbox_stat.stat.exists
 
     - name: Mount | Mount VirtualBox guest additions ISO.
       mount:
