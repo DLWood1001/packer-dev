@@ -1,6 +1,11 @@
+# Note(Dan): Added a sync before the reboot as I've seen some
+#            instances where the HD is becoming corrupted after these
+#            reboots are done. I believe this should fix the issue.
+- name: Sync Disks
+  command: sync
+
 - name: Reboot system.
   shell: |
-    /usr/bin/sync
     /usr/bin/sleep 2s
     /usr/sbin/shutdown -r -f now
   # /usr/bin/systemctl reboot -i

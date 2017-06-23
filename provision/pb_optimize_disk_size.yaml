@@ -27,3 +27,6 @@
         dd if=/dev/zero of={{item}}whitespace bs=1M count=$count
         rm {{item}}whitespace
       with_items: "{{zero_partitions}}"
+
+    - name: Sync Disks
+      command: sync
