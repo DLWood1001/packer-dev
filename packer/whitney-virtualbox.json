@@ -19,13 +19,14 @@
             ["modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}"],
 
             ["modifyvm", "{{.Name}}", "--nic1", "nat"],
+            ["modifyvm", "{{.Name}}", "--nictype1", "virtio"],
+            ["modifyvm", "{{.Name}}", "--cableconnected1", "on"],
             ["modifyvm", "{{.Name}}", "--natpf1", "whitney_http_port,tcp,127.0.0.1,8080,,80"],
             ["modifyvm", "{{.Name}}", "--natpf1", "whitney_https_port,tcp,127.0.0.1,8443,,443"],
-            ["modifyvm", "{{.Name}}", "--cableconnected1", "on"],
-
             ["modifyvm", "{{.Name}}", "--natpf1", "ansible_ssh_port,tcp,127.0.0.1,{{user `ansible_ssh_port`}},,{{user `ssh_port`}}"],
 
             ["modifyvm", "{{.Name}}", "--nic2", "bridged"],
+            ["modifyvm", "{{.Name}}", "--nictype2", "virtio"],
             ["modifyvm", "{{.Name}}", "--bridgeadapter2", "{{user `bridge_adapter2`}}"],
             ["modifyvm", "{{.Name}}", "--cableconnected2", "on"]
          ],
