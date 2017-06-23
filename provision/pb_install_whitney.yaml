@@ -179,6 +179,16 @@
       async: 3800
       poll: 10
 
+    # Note(Dan): This is a work around until they update their
+    #            dependencies to include this module.
+    - name: Install Whitney - Angular Multiselect Dropdown
+      npm:
+        name: angular2-multiselect-dropdown
+        path: "{{fm_install_base}}/{{fm_directory}}"
+        state: present
+      async: 3800
+      poll: 10
+
     - name: Gather Facts Whitney - Autostart
       command: autostart check -n {{fm_autostart_name}}
       register: fm_as_facts
