@@ -1,5 +1,6 @@
 - name: Reboot system.
   shell: |
+    /usr/bin/sync
     /usr/bin/sleep 2s
     /usr/sbin/shutdown -r -f now
   # /usr/bin/systemctl reboot -i
