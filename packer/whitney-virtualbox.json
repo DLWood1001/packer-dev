@@ -25,9 +25,8 @@
             ["modifyvm", "{{.Name}}", "--natpf1", "whitney_https_port,tcp,127.0.0.1,8443,,443"],
             ["modifyvm", "{{.Name}}", "--natpf1", "ansible,tcp,127.0.0.1,{{user `ansible_ssh_port`}},,22"],
 
-            ["modifyvm", "{{.Name}}", "--nic2", "bridged"],
+            ["modifyvm", "{{.Name}}", "--nic2", "null"],
             ["modifyvm", "{{.Name}}", "--nictype2", "virtio"],
-            ["modifyvm", "{{.Name}}", "--bridgeadapter2", "{{user `bridge_adapter2`}}"],
             ["modifyvm", "{{.Name}}", "--cableconnected2", "on"]
          ],
          "vboxmanage_post": [
