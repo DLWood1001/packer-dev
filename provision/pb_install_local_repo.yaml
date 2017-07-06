@@ -24,7 +24,7 @@
         description: CentOS Local Repository
         baseurl: "file:///mnt/{{lr_name}}"
         gpgkey: "file:///mnt/{{lr_name}}/RPM-GPG-KEY-CentOS-7"
-        enabled: true
+        enabled: false
         gpgcheck: true
         state: present
 
@@ -33,5 +33,5 @@
         path: "/mnt/{{lr_name}}"
         state: directory
 
-    - name: Mount | Mount VirtualBox guest additions ISO.
+    - name: Mount | Mount CentOS Local CD
       command: "mount -t iso9660 {{lr_dev}} /mnt/{{lr_name}}"

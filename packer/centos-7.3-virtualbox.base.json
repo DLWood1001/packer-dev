@@ -144,6 +144,12 @@
             "--extra-vars", "reboot_username={{user `ssh_username`}}",
             "--extra-vars", "reboot_password={{user `ssh_password`}}",
             "--extra-vars", "reboot_port={{user `ansible_ssh_port`}}",
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_gnome_preferences.yaml",
+         "extra_arguments": [
+            "--extra-vars", "target={{user `target`}}",
+            "--extra-vars", "media={{user `media`}}",
 
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
