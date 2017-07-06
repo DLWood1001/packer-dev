@@ -21,7 +21,7 @@
             ["modifyvm", "{{.Name}}", "--nic1", "nat"],
             ["modifyvm", "{{.Name}}", "--nictype1", "virtio"],
             ["modifyvm", "{{.Name}}", "--cableconnected1", "on"],
-            ["modifyvm", "{{.Name}}", "--natpf1", "ansible,tcp,127.0.0.1,{{user `ansible_ssh_port`}},,22"]
+            ["modifyvm", "{{.Name}}", "--natpf1", "ansible,tcp,127.0.0.1,{{user `ansible_port`}},,22"]
          ],
          "vboxmanage_post": [
             ["modifyvm", "{{.Name}}", "--natpf1", "delete", "ansible"]
@@ -143,7 +143,13 @@
 
             "--extra-vars", "reboot_username={{user `ssh_username`}}",
             "--extra-vars", "reboot_password={{user `ssh_password`}}",
-            "--extra-vars", "reboot_port={{user `ansible_ssh_port`}}",
+            "--extra-vars", "reboot_port={{user `ansible_port`}}",
+
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+
       {
          "type": "ansible",
          "playbook_file": "./provision/pb_install_gnome_preferences.yaml",
@@ -213,7 +219,7 @@
       "ssh_port": "22",
       "sudo_password": "password",
 
-      "ansible_ssh_port": "2323",
+      "ansible_port": "2323",
 
       "http_proxy": "{{env `http_proxy`}}",
       "https_proxy": "{{env `https_proxy`}}"
