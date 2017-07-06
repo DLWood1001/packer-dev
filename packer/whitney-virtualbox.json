@@ -1,7 +1,8 @@
 {
    "builders": [
       {
-         "name": "{{user `name`}}",
+         "name": "{{user `name`}}.virtualbox",
+         "type": "virtualbox-iso",
 
          "iso_url": "{{user `iso_path`}}/{{user `iso_file`}}",
          "iso_checksum_type": "sha256",
@@ -10,7 +11,6 @@
          "guest_additions_mode": "upload",
          "guest_additions_path": "/tmp/VBoxGuestAdditions_{{.Version}}.iso",
 
-         "type": "virtualbox-iso",
          "headless": "{{user `headless`}}",
          "guest_os_type": "RedHat_64",
          "hard_drive_interface": "sata",
@@ -50,7 +50,7 @@
          "shutdown_command": "echo 'password' | sudo -S shutdown -h now",
 
          "format": "ova",
-         "vm_name": "{{user `name`}}.{{user `provider`}}",
+         "vm_name": "{{user `name`}}.virtualbox",
          "output_directory": "builds/ova",
 
          "ssh_username": "{{user `ssh_username`}}",
@@ -210,8 +210,6 @@
       "python_version": "2.7.11",
 
       "http_proxy": "{{env `http_proxy`}}",
-      "https_proxy": "{{env `https_proxy`}}",
-
-      "bridge_adapter2": "lo"
+      "https_proxy": "{{env `https_proxy`}}"
    }
 }
