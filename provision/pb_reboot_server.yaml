@@ -29,6 +29,8 @@
       -o StrictHostKeyChecking=no
       -o ConnectTimeout=1
       -o ConnectionAttempts=1
+      -o PreferredAuthentications=password
+      -o PubkeyAuthentication=no
       {{reboot_username}}@{{ansible_host}} -p {{reboot_port}} 'echo succeeded'
   register: ssh_result
   until: ssh_result|failed
@@ -56,6 +58,8 @@
       -o StrictHostKeyChecking=no
       -o ConnectTimeout=1
       -o ConnectionAttempts=1
+      -o PreferredAuthentications=password
+      -o PubkeyAuthentication=no
       {{reboot_username}}@{{ansible_host}} -p {{reboot_port}} 'echo succeeded'
   register: ssh_result
   until:
