@@ -122,3 +122,4 @@
       with_items:
         - 1
         - 2
+      when: vbox_target == 'graphical'
