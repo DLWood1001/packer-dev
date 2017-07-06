@@ -93,7 +93,7 @@
         fstype: iso9660
         state: mounted
 
-    - name: Install | Install VirtualBox guest additions ISO.
+    - name: Install | Install VirtualBox guest additions.
       command: "./VBoxLinuxAdditions.run {{vbox_nox11}}"
       args:
         chdir: /tmp/vbox
