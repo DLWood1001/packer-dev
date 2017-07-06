@@ -6,6 +6,7 @@
   vars:
     # Gnome Extension Variables
     # -------------------------
+    gp_media: "{{media|default('remote')}}"
     gp_base: org.gnome.shell
     gp_key: enabled-extensions
     gp_extension_name_suffix: gnome-shell-extensions.gcampax.github.com
@@ -32,12 +33,20 @@
       meta: end_play
       when: target|default('multi-user') != 'graphical'
 
+    - name: Set | Set local repo
+      set_fact:
+        gp_enable_repos: "local-repo"
+        gp_disable_repos: "*"
+      when: gp_media == "local"
+
   tasks:
     # Install Gnome Extensions
     # ------------------------
     - name: Install Gnome Extensions
       yum:
         name: "{{gp_extension_package_prefix}}-{{item}}"
+        enablerepo: "{{gp_enable_repos|default(omit)}}"
+        disablerepo: "{{gp_disable_repos|default(omit)}}"
         state: present
       with_items: "{{gp_extensions}}"
 
