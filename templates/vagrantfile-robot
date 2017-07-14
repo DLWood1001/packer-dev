@@ -16,7 +16,6 @@ Vagrant.configure("2") do |config|
 
   # Default Vagrant Overrides
   # -------------------------
-  # config.vm.hostname = "robot.local"
   config.ssh.username = "admin"
 
   config.vm.guest = "redhat"
@@ -94,6 +93,54 @@ Vagrant.configure("2") do |config|
                            :target_type => "virtio"
   end
 
+
+  # Provisioner Settings
+  # --------------------
+  box_proxy = ENV['http_proxy']
+  if not box_proxy
+    box_proxy = false
+  end
+
+  box_proxy_provisioner = <<-'PROVISIONER_EOL'
+#!/bin/bash
+
+box_proxy=$1
+if [ "${box_proxy}" == "false" ]; then
+  exit 0
+fi
+
+box_proxy=$(echo ${box_proxy} | perl -pe 's%^https?://([^:]+:\d+).*?$%\1%g')
+IFS=: read box_host box_port <<< ${box_proxy}
+
+cat >/etc/dconf/db/site.d/proxy <<PROXY_EOL
+
+# Proxy Settings
+# --------------
+[system/proxy]
+mode='manual'
+
+[system/proxy/http]
+enabled=true
+host='${box_host}'
+port='${box_port}'
+
+[system/proxy/https]
+enabled=true
+host='${box_host}'
+port='${box_port}'
+
+PROXY_EOL
+
+dconf update
+
+PROVISIONER_EOL
+
+  config.vm.provision "shell",
+    name: "Proxy Setup",
+    inline: box_proxy_provisioner,
+    args: ["#{box_proxy}"]
+
+
   # Additional Plugin Settings
   # --------------------------
   if Vagrant.has_plugin?("vagrant-vbguest")
@@ -104,11 +151,31 @@ Vagrant.configure("2") do |config|
   if Vagrant.has_plugin?("vagrant-proxyconf")
     config.proxy.enabled = false
   
-    if ENV['http_proxy'] || ENV['https_proxy']
-      config.proxy.enabled = true
-  
+    box_proxy_enabled = {
+      http: false,
+      https: false, 
+      yum: false,
+      apt: false, 
+      docker: false, 
+      git: false, 
+      npm: false, 
+      pear: false, 
+      subversion: false, 
+      windows: false
+    }
+
+    if ENV['http_proxy'] 
+      box_proxy_enabled[:http] = true
       config.proxy.http = ENV['http_proxy']
+    end
+
+    if ENV['https_proxy']
+      box_proxy_enabled[:https] = true
       config.proxy.https = ENV['https_proxy']
+    end
+
+    if box_proxy_enabled.values.include? true
+      config.proxy.enabled = box_proxy_enabled
     end
   end
 end
