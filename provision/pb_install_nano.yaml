@@ -1,0 +1,29 @@
+---
+- name: Install Nano
+  hosts: "{{hosts|d(host|d('all'))}}"
+  gather_facts: no
+ 
+  vars:
+    nano_media: "{{media|default('remote')}}"
+
+  environment:
+    http_proxy: "{{http_proxy|default(None)}}"
+    https_proxy: "{{https_proxy|default(None)}}"
+
+  pre_tasks:
+    - name: Set | Set local repo
+      set_fact:
+        nano_enable_repos: "local-repo"
+        nano_disable_repos: "*"
+      when: nano_media == "local"
+
+  tasks:
+    # Install Nano
+    # ------------
+    - name: Install Nano
+      yum:
+        name: nano
+        enablerepo: "{{nano_enable_repos|default(omit)}}"
+        disablerepo: "{{nano_disable_repos|default(omit)}}"
+        state: present
+
