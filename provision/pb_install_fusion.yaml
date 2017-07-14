@@ -14,7 +14,7 @@
       - 'python-devel'
 
     f_git_username: git
-    f_git_hostname: 15.252.78.7
+    f_git_hostname: 15.112.113.202
     f_venv_username: admin
     f_install_directory: /opt/fusion
     f_download_directory: /tmp/fusion
@@ -82,8 +82,8 @@
 
     - name: Install Fusion Key File
       copy:
-        src: ./id_rsa.git
-        dest: /tmp/id_rsa.git
+        src: ./id_rsa_packer
+        dest: /tmp/id_rsa_packer
         mode: 0600
 
     - name: Fusion Exists?
@@ -96,9 +96,9 @@
         ssh_opts: >-
           -o StrictHostKeyChecking=no
           -o UserKnownHostsFile=/dev/null
-        repo: "{{f_git_username}}@{{f_git_hostname}}:/opt/git/fusion.git"
+        repo: "{{f_git_username}}@{{f_git_hostname}}:/opt/git/fusion"
         clone: true
-        key_file: /tmp/id_rsa.git
+        key_file: /tmp/id_rsa_packer
         dest: "{{f_download_directory}}"
       when: not fusion_stat.stat.exists
 
@@ -147,6 +147,6 @@
 
     - name: Clean Fusion Install Key File
       file:
-        path: /tmp/id_rsa.git
+        path: /tmp/id_rsa_packer
         state: absent
 
