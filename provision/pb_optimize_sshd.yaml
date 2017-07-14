@@ -5,7 +5,7 @@
 
   tasks:
     # Note(Dan): UseDNS will try to do a reverse DNS lookup on the IP of an
-    #           incoming connection. This isn't needed right now.
+    #            incoming connection. This isn't needed right now.
     - name: Disable DNS.
       lineinfile:
         path: /etc/ssh/sshd_config
