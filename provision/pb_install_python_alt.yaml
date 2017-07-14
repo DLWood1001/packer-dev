@@ -7,6 +7,8 @@
     py_ver: "{{version|default('2.7.11')}}"
    
     py_dependencies:
+      - 'tar'
+      - 'xz'
       - '@Development Tools'
       - 'zlib-devel'
       - 'bzip2-devel'
@@ -39,7 +41,7 @@
   tasks:
     # Build & Install Python
     # ----------------------
-    - name: Install Required Core Dependencies
+    - name: Install Required Python Dependencies
       yum:
         name: "{{item}}"
         state: present
@@ -102,6 +104,7 @@
       get_url:
         url: "https://bootstrap.pypa.io/ez_setup.py"
         dest: "/tmp/ez_setup/ez_setup.py"
+        validate_certs: no
 
     - name: Install Python easy_install
       shell: "{{py_install_dir}}/bin/python{{py_family}} /tmp/ez_setup/ez_setup.py"
