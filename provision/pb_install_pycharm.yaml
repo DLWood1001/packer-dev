@@ -10,6 +10,10 @@
     pycharm_file: "pycharm-community-{{pycharm_ver}}.tar.gz"
     pycharm_url: "{{pycharm_base}}/{{pycharm_file}}"
 
+    pycharm_plugin_url: https://plugins.jetbrains.com/plugin/download
+    pycharm_plugins:
+      - {id: 26215, file: intellibot.jar}
+ 
   environment:
     http_proxy: "{{http_proxy|default(None)}}"
     https_proxy: "{{https_proxy|default(None)}}"
@@ -27,6 +31,17 @@
         dest: "/opt"
         remote_src: yes
         creates: "/opt/pycharm-community-{{pycharm_ver}}/bin/pycharm.sh"
+
+    - name: Download Pycharm Plugins
+      get_url:
+        url: "{{pycharm_plugin_url}}?updateId={{item.id}}"
+        dest: "/tmp/{{item.file}}"
+        validate_certs: no
+      with_items: "{{pycharm_plugins}}"
+
+    - name: Install Pycharm Plugins
+      command: mv /tmp/{{item.file}} /opt/pycharm-community-{{pycharm_ver}}/plugins
+      with_items: "{{pycharm_plugins}}"
 
     - name: Create Pycharm Symbolic Links
       file:
