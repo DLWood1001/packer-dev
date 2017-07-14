@@ -32,7 +32,7 @@ Vagrant.configure("2") do |config|
   config.vm.network :private_network,
      virtualbox__intnet: "fm_test_lan",
      ip: "172.16.1.10",
-     netmask: "24"
+     netmask: "255.255.255.0"
 
   # Default Provider Overrides
   # --------------------------
