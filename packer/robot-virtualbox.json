@@ -224,6 +224,7 @@
    "post-processors": [
       {
         "type": "vagrant",
+        "keep_input_artifact": true,
         "output": "builds/box/{{user `name`}}.{{user `provider`}}.box",
         "vagrantfile_template": "./templates/vagrantfile-{{user `name`}}"
       }
