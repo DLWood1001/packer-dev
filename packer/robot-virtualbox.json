@@ -2,34 +2,49 @@
    "builders": [
       {
          "name": "{{user `name`}}",
-         "output_directory": "output",
-         "http_directory": "kickstart",
+         "type": "virtualbox-iso",
 
          "iso_url": "{{user `iso_path`}}/{{user `iso_file`}}",
          "iso_checksum_type": "sha256",
          "iso_checksum": "{{user `iso_checksum_sha256_hash`}}",
 
-         "type": "virtualbox-iso",
+         "guest_additions_mode": "upload",
+         "guest_additions_path": "/tmp/VBoxGuestAdditions_{{.Version}}.iso",
+
          "headless": "{{user `headless`}}",
          "guest_os_type": "RedHat_64",
          "hard_drive_interface": "sata",
          "vboxmanage": [
             ["modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}"],
             ["modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}"],
-            ["modifyvm", "{{.Name}}", "--natpf1", "ssh_ansible_port,tcp,127.0.0.1,{{user `ssh_ansible_port`}},,{{user `ssh_port`}}"]
+
+            ["modifyvm", "{{.Name}}", "--nic1", "nat"],
+            ["modifyvm", "{{.Name}}", "--nictype1", "virtio"],
+            ["modifyvm", "{{.Name}}", "--cableconnected1", "on"],
+            ["modifyvm", "{{.Name}}", "--natpf1", "ansible,tcp,127.0.0.1,{{user `ansible_ssh_port`}},,22"]
+         ],
+         "vboxmanage_post": [
+            ["modifyvm", "{{.Name}}", "--natpf1", "delete", "ansible"]
          ],
 
+         "http_directory": "kickstart",
+         "boot_wait": "5s",
          "boot_command": [
             "<tab>",
             "<leftCtrlOn>ww<leftCtrlOff>",
             "quiet ",
-            "biosdevname=1 ",
-            "net.ifnames=1 ",
+            "biosdevname=0 ",
+            "net.ifnames=0 ",
             "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `target`}}.cfg",
             "<enter>"
          ],
-         "boot_wait": "5s",
+
+         "post_shutdown_delay": "30s",
          "shutdown_command": "echo 'password' | sudo -S shutdown -h now",
+
+         "format": "ova",
+         "vm_name": "{{user `name`}}.virtualbox",
+         "output_directory": "builds/ova",
 
          "ssh_username": "{{user `ssh_username`}}",
          "ssh_password": "{{user `ssh_password`}}",
@@ -41,83 +56,13 @@
    "provisioners": [
       {
          "type": "ansible",
-         "playbook_file": "./provision/pb_install_users.yaml",
+         "playbook_file": "./provision/pb_optimize_sshd.yaml",
          "extra_arguments": [
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
       },
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_install_virtualbox_guest_additions.yaml",
-         "extra_arguments": [
-            "--extra-vars", "target={{user `target`}}",
-            "--extra-vars", "provider={{user `provider`}}",
 
-            "--extra-vars", "reboot_username={{user `ssh_username`}}",
-            "--extra-vars", "reboot_password={{user `ssh_password`}}",
-            "--extra-vars", "reboot_port={{user `ssh_ansible_port`}}",
-
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_install_browsers.yaml",
-         "extra_arguments": [
-            "--extra-vars", "target={{user `target`}}",
-
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_install_python_alt.yaml",
-         "extra_arguments": [
-            "--extra-vars", "version={{user `python_version`}}",
-
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_install_fusion.yaml",
-         "extra_arguments": [
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_install_hostname.yaml",
-         "extra_arguments": [
-            "--extra-vars", "hostname={{user `name`}}",
-
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_install_gnome_preferences.yaml",
-         "extra_arguments": [
-            "--extra-vars", "target={{user `target`}}",
-
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_install_epel.yaml",
-         "extra_arguments": [
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
       {
          "type": "ansible",
          "playbook_file": "./provision/pb_fix_networking.yaml",
@@ -128,22 +73,7 @@
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
       },
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_optimize_sshd.yaml",
-         "extra_arguments": [
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_optimize_grub.yaml",
-         "extra_arguments": [
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
+
       {
          "type": "ansible",
          "playbook_file": "./provision/pb_optimize_yum.yaml",
@@ -152,6 +82,134 @@
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
       },
+
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_local_repo.yaml",
+         "extra_arguments": [
+            "--extra-vars", "media={{user `media`}}",
+
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_users.yaml",
+         "extra_arguments": [
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_virtualbox_guest_additions.yaml",
+         "extra_arguments": [
+            "--extra-vars", "target={{user `target`}}",
+            "--extra-vars", "provider={{user `provider`}}",
+
+            "--extra-vars", "media={{user `media`}}",
+
+            "--extra-vars", "reboot_username={{user `ssh_username`}}",
+            "--extra-vars", "reboot_password={{user `ssh_password`}}",
+            "--extra-vars", "reboot_port={{user `ansible_ssh_port`}}",
+
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_browsers.yaml",
+         "extra_arguments": [
+            "--extra-vars", "target={{user `target`}}",
+
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_python_alt.yaml",
+         "extra_arguments": [
+            "--extra-vars", "version={{user `python_version`}}",
+
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_fusion.yaml",
+         "extra_arguments": [
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_pycharm.yaml",
+         "extra_arguments": [
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_nano.yaml",
+         "extra_arguments": [
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_hostname.yaml",
+         "extra_arguments": [
+            "--extra-vars", "hostname={{user `name`}}",
+
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_gnome_preferences.yaml",
+         "extra_arguments": [
+            "--extra-vars", "target={{user `target`}}",
+
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_install_epel.yaml",
+         "extra_arguments": [
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+
+      {
+         "type": "ansible",
+         "playbook_file": "./provision/pb_optimize_grub.yaml",
+         "extra_arguments": [
+            "--extra-vars", "http_proxy={{user `http_proxy`}}",
+            "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ]
+      },
+
       {
          "type": "ansible",
          "playbook_file": "./provision/pb_optimize_disk_size.yaml",
@@ -165,7 +223,7 @@
    "post-processors": [
       {
         "type": "vagrant",
-        "output": "builds/{{user `name`}}.{{user `target`}}.{{user `provider`}}.box",
+        "output": "builds/box/{{user `name`}}.{{user `provider`}}.box",
         "vagrantfile_template": "./templates/vagrantfile-{{user `name`}}"
       }
    ],
@@ -174,7 +232,8 @@
       "name": "robot",
       "target": "graphical",
       "provider": "virtualbox",
-      "media": "local",
+
+      "media": "remote",
 
       "iso_file": "CentOS-7-x86_64-DVD-1611.iso",
       "iso_path": "http://mirrors.kernel.org/centos/7.3.1611/isos/x86_64",
@@ -187,9 +246,9 @@
       "ssh_username": "root",
       "ssh_password": "password",
       "ssh_port": "22",
-      "ssh_ansible_port": "2323",
-
       "sudo_password": "password",
+
+      "ansible_ssh_port": "23232",
 
       "python_version": "2.7.11",
 
