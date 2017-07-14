@@ -157,6 +157,8 @@
          "type": "ansible",
          "playbook_file": "./provision/pb_install_pycharm.yaml",
          "extra_arguments": [
+            "--extra-vars", "version={{user `pycharm_version`}}",
+
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
@@ -250,9 +252,10 @@
       "ssh_port": "22",
       "sudo_password": "password",
 
-      "ansible_ssh_port": "23232",
+      "ansible_ssh_port": "2323",
 
       "python_version": "2.7.11",
+      "pycharm_version": "2017.1.2",
 
       "http_proxy": "{{env `http_proxy`}}",
       "https_proxy": "{{env `https_proxy`}}"
