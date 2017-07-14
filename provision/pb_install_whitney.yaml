@@ -109,8 +109,8 @@
 
     - name: Install Whitney Key File
       copy:
-        src: ./id_rsa.git
-        dest: /tmp/id_rsa.git
+        src: ./id_rsa_packer
+        dest: /tmp/id_rsa_packer
         mode: 0600
 
     - name: Download Whitney
@@ -120,7 +120,7 @@
           -o UserKnownHostsFile=/dev/null
         repo: "{{fm_git_username}}@{{fm_git_hostname}}:/opt/git/{{fm_directory}}"
         clone: true
-        key_file: /tmp/id_rsa.git
+        key_file: /tmp/id_rsa_packer
         dest: "{{fm_download_base}}/{{fm_directory}}"
 
     # - name: Copy SmartRack Install Files
