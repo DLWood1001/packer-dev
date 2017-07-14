@@ -12,6 +12,7 @@
       # virtualbox: enp0s3
       virtualbox: eth0
       libvirt: eth0
+      vmware: eth0
 
     fn_device_timeout: 600
 
