@@ -36,8 +36,8 @@
 
     - name: Install Pycharm Desktop File
       template:
-        src: pycharm.desktop.j2
-        dest: "/usr/share/applications/pycharm.desktop"
+        src: jetbrains-pycharm-ce.desktop.j2
+        dest: "/usr/share/applications/jetbrains-pycharm-ce.desktop"
         mode: 0644
 
     - name: Remove Pycharm Installation files

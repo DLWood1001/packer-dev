@@ -11,7 +11,7 @@ provider_memory = 1024
 
 whitney_host_http_port = 8080
 whitney_host_https_port = 8443
-whitney_guest_ip = "172.16.1.2"
+whitney_guest_ip = "172.16.0.20"
 whitney_guest_netmask = "255.255.255.0"
 
 # Default Vagrant Settings
@@ -55,7 +55,7 @@ Vagrant.configure("2") do |config|
   # Whitney <-> Robot/Fusion
   config.vm.network :private_network,
      virtualbox__intnet: "fm_test_lan",
-     ip: "172.16.0.20",
+     ip: "172.16.1.20",
      netmask: "255.255.255.0" 
 
 

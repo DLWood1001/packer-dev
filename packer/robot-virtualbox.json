@@ -1,7 +1,7 @@
 {
    "builders": [
       {
-         "name": "{{user `name`}}",
+         "name": "{{user `name`}}.virtualbox",
          "type": "virtualbox-iso",
 
          "iso_url": "{{user `iso_path`}}/{{user `iso_file`}}",
@@ -33,6 +33,7 @@
             "<tab>",
             "<leftCtrlOn>ww<leftCtrlOff>",
             "quiet ",
+            "ipv6.disable=1 ",
             "biosdevname=0 ",
             "net.ifnames=0 ",
             "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `target`}}.cfg",
