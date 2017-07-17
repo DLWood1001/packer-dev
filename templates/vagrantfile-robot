@@ -118,16 +118,17 @@ cat >/etc/dconf/db/site.d/proxy <<PROXY_EOL
 # --------------
 [system/proxy]
 mode='manual'
+ignore-hosts=['localhost', '127.0.0.0/8', '::1', '10.0.0.0/8', '172.16.0.0/16', '192.168.0.0/16']
 
 [system/proxy/http]
 enabled=true
 host='${box_host}'
-port='${box_port}'
+port=${box_port}
 
 [system/proxy/https]
 enabled=true
 host='${box_host}'
-port='${box_port}'
+port=${box_port}
 
 PROXY_EOL
 
