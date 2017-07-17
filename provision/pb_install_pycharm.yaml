@@ -70,7 +70,7 @@
     - name: Install PyCharm Plugins
       copy:
         src: "/tmp/{{item.file}}"
-        dest: "/opt/pycharm-community-{{pc_ver}}/plugins{{item.file}}"
+        dest: "/opt/pycharm-community-{{pc_ver}}/plugins/{{item.file}}"
         force: no
         remote_src: true
       with_items: "{{pc_plugins}}"
