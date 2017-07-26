@@ -10,19 +10,47 @@
         uid: 1000
         gid: 1000
         comment: Administrator
-        groups: wheel
         shell: /bin/bash
         skeleton: /etc/skel
         password: "{{'password'|password_hash('sha512')}}"
         public_key: "https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant.pub"
         # public_key: "{{lookup('file', './vagrant.pub')}}"
+        administrator: true
         vagrant: true
+      - name: dan
 
   environment:
-    http_proxy: "{{http_proxy|default(None)}}"
-    https_proxy: "{{https_proxy|default(None)}}"
+    http_proxy: "{{http_proxy|default(omit)}}"
+    https_proxy: "{{https_proxy|default(omit)}}"
 
   tasks:
+    - name: Gather Facts On System
+      setup:
+
+    - name: "Set Administrator Group - Debian Family"
+      set_fact:
+        profiles_new: "{{profiles_new|d([])}} + [{{item|combine({'groups':(item.groups|d([])+['sudo'])})}}]"
+        admin_groups_updated: true
+      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+      with_items: "{{profiles}}"
+
+    - name: "Set Administrator Group - RHEL Family"
+      set_fact:
+        profiles_new: "{{profiles_new|d([])}} + [{{profiles_new|combine({'groups':(item.groups|d([])+['wheel'])})}}]"
+        admin_groups_updated: true
+      when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+      with_items: "{{profiles}}"
+
+    - name: "Set Administrator Group - RHEL Family"
+      set_fact:
+        profiles: "{{profiles_new}}"
+      when: admin_groups_updated == true
+
+    - debug:
+        msg: "{{profiles}}"
+
+    - meta: end_play
+
     - name: "Create | User Group"
       group:
         name: "{{item.group}}"
