@@ -23,7 +23,13 @@
             ["modifyvm", "{{.Name}}", "--nic1", "nat"],
             ["modifyvm", "{{.Name}}", "--nictype1", "virtio"],
             ["modifyvm", "{{.Name}}", "--cableconnected1", "on"],
-            ["modifyvm", "{{.Name}}", "--natpf1", "ansible,tcp,127.0.0.1,{{user `ansible_ssh_port`}},,22"]
+            ["modifyvm", "{{.Name}}", "--natpf1", "whitney_http_port,tcp,127.0.0.1,8080,,80"],
+            ["modifyvm", "{{.Name}}", "--natpf1", "whitney_https_port,tcp,127.0.0.1,8443,,443"],
+            ["modifyvm", "{{.Name}}", "--natpf1", "ansible,tcp,127.0.0.1,{{user `ansible_ssh_port`}},,22"],
+
+            ["modifyvm", "{{.Name}}", "--nic2", "null"],
+            ["modifyvm", "{{.Name}}", "--nictype2", "virtio"],
+            ["modifyvm", "{{.Name}}", "--cableconnected2", "on"]
          ],
          "vboxmanage_post": [
             ["modifyvm", "{{.Name}}", "--natpf1", "delete", "ansible"]
@@ -126,29 +132,7 @@
 
       {
          "type": "ansible",
-         "playbook_file": "./provision/pb_install_browsers.yaml",
-         "extra_arguments": [
-            "--extra-vars", "target={{user `target`}}",
-
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
-
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_install_python_alt.yaml",
-         "extra_arguments": [
-            "--extra-vars", "version={{user `python_version`}}",
-
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
-
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_install_fusion.yaml",
+         "playbook_file": "./provision/pb_install_epel.yaml",
          "extra_arguments": [
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
@@ -157,18 +141,7 @@
 
       {
          "type": "ansible",
-         "playbook_file": "./provision/pb_install_pycharm.yaml",
-         "extra_arguments": [
-            "--extra-vars", "version={{user `pycharm_version`}}",
-
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
-
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_install_nano.yaml",
+         "playbook_file": "./provision/pb_install_whitney.yaml",
          "extra_arguments": [
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
@@ -180,17 +153,6 @@
          "playbook_file": "./provision/pb_install_hostname.yaml",
          "extra_arguments": [
             "--extra-vars", "hostname={{user `name`}}",
-
-            "--extra-vars", "http_proxy={{user `http_proxy`}}",
-            "--extra-vars", "https_proxy={{user `https_proxy`}}"
-         ]
-      },
-
-      {
-         "type": "ansible",
-         "playbook_file": "./provision/pb_install_gnome_preferences.yaml",
-         "extra_arguments": [
-            "--extra-vars", "target={{user `target`}}",
 
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
@@ -226,8 +188,8 @@
    ],
 
    "variables": {
-      "name": "robot",
-      "target": "graphical",
+      "name": "smartrack",
+      "target": "multi-user",
       "provider": "virtualbox",
 
       "media": "remote",
@@ -248,7 +210,6 @@
       "ansible_ssh_port": "2323",
 
       "python_version": "2.7.11",
-      "pycharm_version": "2017.1.2",
 
       "http_proxy": "{{env `http_proxy`}}",
       "https_proxy": "{{env `https_proxy`}}"

@@ -1,61 +1,151 @@
 ---
-- name: Install Pycharm 
+- name: Install PyCharm
   hosts: "{{hosts|d(host|d('all'))}}"
   gather_facts: no
 
   vars:
-    pycharm_ver: "{{version|default('2017.1.2')}}"
+    pc_ver: "{{version|default('2017.1.5')}}"
 
-    pycharm_base: http://download.jetbrains.com/python
-    pycharm_file: "pycharm-community-{{pycharm_ver}}.tar.gz"
-    pycharm_url: "{{pycharm_base}}/{{pycharm_file}}"
+    pc_base: http://download.jetbrains.com/python
+    pc_file: "pycharm-community-{{pc_ver}}.tar.gz"
+    pc_url: "{{pc_base}}/{{pc_file}}"
 
-    pycharm_plugin_url: https://plugins.jetbrains.com/plugin/download
-    pycharm_plugins:
+    pc_plugin_url: https://plugins.jetbrains.com/plugin/download
+    pc_plugins:
       - {id: 26215, file: intellibot.jar}
- 
+
+    pc_users:
+      - admin
+
+    pc_option_files:
+      - certificates.xml
+      - options.xml
+      - ide.general.xml
+
+    # Note (Dan): From looking at the source for PyCharm, I still can't find
+    #             where this is string comes from. I believe it comes from the
+    #             setting JetBrains.privacy_policy.accepted_version and that
+    #             privacy_policy is mashed into this string some how.
+    #             See:
+    #              AppUIUtil.java
+    #              PrivacyPolicy.java
+    #              Prefs.java
+    #              StringTokenizer.java
+    pc_ua_dir: "_!(!!cg\"p!(}!}@\"j!(k!|w\"w!'8!b!\"p!':!e@=="
+
+    # Note (Dan): Don't edit variables below.
+    pc_ver_regex: "^([0-9]+)\\.([0-9]+)\\.([0-9]+)$"
+
+    pc_major: "{{pc_ver|regex_replace(pc_ver_regex, '\\1')}}"
+    pc_minor: "{{pc_ver|regex_replace(pc_ver_regex, '\\2')}}"
+    pc_patch: "{{pc_ver|regex_replace(pc_ver_regex, '\\3')}}"
+
+    pc_family: "{{pc_major}}.{{pc_minor}}"
+
   environment:
     http_proxy: "{{http_proxy|default(None)}}"
     https_proxy: "{{https_proxy|default(None)}}"
 
   tasks:
-    - name: Download Pycharm
+    - name: Download PyCharm
       get_url:
-        url: "{{pycharm_url}}"
-        dest: "/tmp/{{pycharm_file}}"
+        url: "{{pc_url}}"
+        dest: "/tmp/{{pc_file}}"
         validate_certs: no
 
-    - name: Extract Pycharm
+    - name: Extract PyCharm
       unarchive:
-        src: "/tmp/{{pycharm_file}}"
+        src: "/tmp/{{pc_file}}"
         dest: "/opt"
         remote_src: yes
-        creates: "/opt/pycharm-community-{{pycharm_ver}}/bin/pycharm.sh"
+        creates: "/opt/pycharm-community-{{pc_ver}}/bin/pycharm.sh"
 
-    - name: Download Pycharm Plugins
+    - name: Download PyCharm Plugins
       get_url:
-        url: "{{pycharm_plugin_url}}?updateId={{item.id}}"
+        url: "{{pc_plugin_url}}?updateId={{item.id}}"
         dest: "/tmp/{{item.file}}"
         validate_certs: no
-      with_items: "{{pycharm_plugins}}"
+      with_items: "{{pc_plugins}}"
 
-    - name: Install Pycharm Plugins
-      command: mv /tmp/{{item.file}} /opt/pycharm-community-{{pycharm_ver}}/plugins
-      with_items: "{{pycharm_plugins}}"
+    - name: Install PyCharm Plugins
+      copy:
+        src: "/tmp/{{item.file}}"
+        dest: "/opt/pycharm-community-{{pc_ver}}/plugins/{{item.file}}"
+        force: no
+        remote_src: true
+      with_items: "{{pc_plugins}}"
 
-    - name: Create Pycharm Symbolic Links
+    - name: Create PyCharm Symbolic Links
       file:
-        src: "/opt/pycharm-community-{{pycharm_ver}}/bin/pycharm.sh"
+        src: "/opt/pycharm-community-{{pc_ver}}/bin/pycharm.sh"
         dest: "/usr/bin/pycharm"
         state: link
 
-    - name: Install Pycharm Desktop File
+    - name: Install PyCharm Desktop File
       template:
         src: jetbrains-pycharm-ce.desktop.j2
         dest: "/usr/share/applications/jetbrains-pycharm-ce.desktop"
         mode: 0644
 
-    - name: Remove Pycharm Installation files
+    - name: Create User Options Directories
       file:
-        path: "/tmp/{{pycharm_file}}"
+        dest: "/home/{{item}}/.PyCharmCE{{pc_family}}/config/options"
+        owner: "{{item}}"
+        group: "{{item}}"
+        mode: 0755
+        state: directory
+      with_items:
+        - "{{pc_users}}"
+
+    - name: Install User Options
+      copy:
+        src: "./pycharm/{{item[1]}}"
+        dest: "/home/{{item[0]}}/.PyCharmCE{{pc_family}}/config/options/{{item[1]}}"
+        owner: "{{item[0]}}"
+        group: "{{item[0]}}"
+        mode: 0664
+      with_nested:
+        - "{{pc_users}}"
+        - "{{pc_option_files}}"
+
+    - name: Create User Agreement Directories
+      file:
+        dest: "/home/{{item}}/.java/.userPrefs/jetbrains/{{pc_ua_dir}}"
+        owner: "{{item}}"
+        group: "{{item}}"
+        mode: 0755
+        state: directory
+      with_items:
+        - "{{pc_users}}"
+
+    # Note (Dan): Adjust permissions on this .userPrefs folder.
+    - name: Create User Agreement Directories
+      file:
+        dest: "/home/{{item}}/.java/.userPrefs/"
+        owner: "{{item}}"
+        group: "{{item}}"
+        mode: 0700
+        state: directory
+      with_items:
+        - "{{pc_users}}"
+
+    - name: Install User Agreement Preferences
+      copy:
+        src: "./pycharm/prefs.xml"
+        dest: "/home/{{item}}/.java/.userPrefs/jetbrains/{{pc_ua_dir}}/prefs.xml"
+        owner: "{{item}}"
+        group: "{{item}}"
+        mode: 0644
+      with_items:
+        - "{{pc_users}}"
+
+    - name: Remove PyCharm Installation Files
+      file:
+        path: "/tmp/{{pc_file}}"
         state: absent
+
+    - name: Remove PyCharm Installation Plugins
+      file:
+        path: "/tmp/{{item.file}}"
+        state: absent
+      with_items: "{{pc_plugins}}"
