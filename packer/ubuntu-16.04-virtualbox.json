@@ -97,7 +97,7 @@
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
          ]
       }
-   },
+   ],
 
    "variables": {
       "name": "ubuntu-16.04.2",

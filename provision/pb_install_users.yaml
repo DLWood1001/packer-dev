@@ -1,101 +1,168 @@
 ---
-- name: Install Users
+- name: Install Profiles
   hosts: "{{hosts|d(host|d('all'))}}"
   gather_facts: no
  
+  # Todo:
+  # 1) Fix Key Issue
+  # 2) Make Passwords Cryptoless
+
   vars:
     profiles:
-      - name: admin
+      admin:
+        name: admin
         group: admin
         uid: 1000
         gid: 1000
         comment: Administrator
         shell: /bin/bash
         skeleton: /etc/skel
-        password: "{{'password'|password_hash('sha512')}}"
-        public_key: "https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant.pub"
-        # public_key: "{{lookup('file', './vagrant.pub')}}"
-        administrator: true
+        password: password
+        admin: true
+
+      vagrant:
+        name: vagrant
+        group: vagrant
+        uid: 1001
+        gid: 1001
+        comment: Vagrant
+        shell: /bin/bash
+        skeleton: /etc/skel
+        password: vagrant
+        admin: false
         vagrant: true
-      - name: dan
+
+    defaults:
+      admin: false
+      vagrant: false
+
+    vagrant_public_key: "https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant.pub"
 
   environment:
     http_proxy: "{{http_proxy|default(omit)}}"
     https_proxy: "{{https_proxy|default(omit)}}"
 
   tasks:
-    - name: Gather Facts On System
+    # Initialize
+    # ----------
+    - name: Determine System Facts
       setup:
 
-    - name: "Set Administrator Group - Debian Family"
+        # Note (Dan): Allows me to kill off some default({}) and d({}) parameters.
+    - name: Initialize Variables
       set_fact:
-        profiles_new: "{{profiles_new|d([])}} + [{{item|combine({'groups':(item.groups|d([])+['sudo'])})}}]"
-        admin_groups_updated: true
-      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+        profiles: "{{profiles|d({})}}"
+      when:
+        - profiles is not defined
       with_items: "{{profiles}}"
 
-    - name: "Set Administrator Group - RHEL Family"
+
+
+    # Normalize
+    # ---------
+    - name: Normalize Defaults
       set_fact:
-        profiles_new: "{{profiles_new|d([])}} + [{{profiles_new|combine({'groups':(item.groups|d([])+['wheel'])})}}]"
-        admin_groups_updated: true
-      when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+        profiles: "{{profiles|combine({item: defaults|d({})|combine(profiles[item], recursive=true)}, recursive=true)}}"
       with_items: "{{profiles}}"
 
-    - name: "Set Administrator Group - RHEL Family"
+    - name: Build Normalized Passwords
       set_fact:
-        profiles: "{{profiles_new}}"
-      when: admin_groups_updated == true
+        sha512s: "{{sha512s|d({})|combine({item: {'sha512': profiles[item].password|password_hash('sha512')}})}}"
+      when: 
+        - profiles[item].password is defined 
+      with_items: "{{profiles}}"
 
-    - debug:
-        msg: "{{profiles}}"
+    - name: Merge Normalized Passwords
+      set_fact:
+        profiles: "{{profiles|combine(sha512s, recursive=true)}}"
+      when:
+        - sha512s is defined
+      with_items: "{{profiles}}"
 
-    - meta: end_play
+    - name: Normalize Vagrant Users
+      set_fact:
+        profiles: "{{profiles|combine({item: {'admin': true}}, recursive=true)}}"
+      when: 
+        - profiles[item].vagrant|d(false) == true
+      with_items: "{{profiles}}"
 
-    - name: "Create | User Group"
+
+    # Admin Group
+    # -----------
+    - name: Determine Admin Group - Debian Family
+      set_fact:
+        admin_group: sudo
+      when: 
+        - ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+    - name: Determine Admin Group - RedHat Family
+      set_fact:
+        admin_group: wheel
+      when: 
+        - ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+    - name: Build Profile Groups
+      set_fact:
+        profile_groups: "{{profile_groups|d({})|combine({item: {'groups': profiles[item].groups|d([]) + [admin_group]}})}}"
+      when: 
+        - profiles[item].admin|d(false) == true
+      with_items: "{{profiles}}"
+
+    - name: Merge Profile Groups
+      set_fact:
+        profiles: "{{profiles|combine(profile_groups|d({}), recursive=true)}}"
+      with_items: "{{profiles}}"
+
+
+    # User Setup
+    # ----------
+    - name: Create User Group
       group:
-        name: "{{item.group}}"
-        gid: "{{item.gid}}"
+        name: "{{profiles[item].group}}"
+        gid: "{{profiles[item].gid|default(omit)}}"
         state: present
+      when: profiles[item].group is defined
       with_items: "{{profiles}}"
 
-    - name: "Create | User"
+    - name: "Create User Profile"
       user:
-        name: "{{item.name}}"
-        uid: "{{item.uid}}"
-        comment: "{{item.comment}}"
-        group: "{{item.group}}"
-        groups: "{{item.groups}}"
-        shell: "{{item.shell}}"
-        skeleton: "{{item.skeleton}}"
-        password: "{{item.password}}"
+        name: "{{profiles[item].name|default(item)}}"
+        uid: "{{profiles[item].uid|default(omit)}}"
+        comment: "{{profiles[item].comment|default(omit)}}"
+        group: "{{profiles[item].group|default(omit)}}"
+        groups: "{{profiles[item].groups|default(omit)}}"
+        shell: "{{profiles[item].shell|default(omit)}}"
+        skeleton: "{{profiles[item].skeleton|default(omit)}}"
+        password: "{{profiles[item].sha512|default(omit)}}"
         state: present
       with_items: "{{profiles}}"
 
-    # Initialize - /etc/sudoers.d/<username> file.
-    # --------------------------------------------
-    - name: Install | Admin user sudo overrides.
-      template:
-        src: sudoers.d.j2
-        dest: "/etc/sudoers.d/{{item.name}}"
-        mode: 0400
-      when: item.vagrant|default(false) == true
-      with_items: "{{profiles}}"
-
-
-    # - name: Install | Install insecure Vagrant public key.
-    #   authorized_key:
-    #     user: "{{item.name}}"
-    #     key: "{{item.public_key}}"
-    #     state: present
-    #   when: item.vagrant|default(false) == true
-    #   with_items: "{{profiles}}"
-
-    - name: Install | Install insecure Vagrant public key.
+    - name: Install Public Key
       authorized_key:
-        user: "{{item.name}}"
+        user: "{{profiles[item].name|default(item)}}"
         state: present
-        key: "{{item.public_key}}"
+        key: "{{profiles[item].public_key}}"
         validate_certs: no
-      when: item.vagrant|default(false) == true
+      when: profiles[item].public_key is defined
+      with_items: "{{profiles}}"
+
+
+    # Vagrant
+    # -------
+    - name: Install Vagrant Profile Sudo Overrides
+      template:
+        src: vagrant.sudoers.j2
+        dest: "/etc/sudoers.d/{{profiles[item].name|default(item)}}"
+        mode: 0400
+      when: profiles[item].vagrant|default(false) == true
+      with_items: "{{profiles}}"
+
+    - name: Install Vagrant Public Key
+      authorized_key:
+        user: "{{profiles[item].name|default(item)}}"
+        key: "{{vagrant_public_key}}"
+        validate_certs: no
+        state: present
+      when: profiles[item].vagrant|default(false) == true
       with_items: "{{profiles}}"
 
