@@ -159,6 +159,9 @@
 
             "--extra-vars", "http_proxy={{user `http_proxy`}}",
             "--extra-vars", "https_proxy={{user `https_proxy`}}"
+         ],
+         "ansible_env_vars": [
+            "ANSIBLE_ROLES_PATH={{user `ansible_roles`}}:$ANSIBLE_ROLES_PATH"
          ]
       }
    ],
@@ -191,6 +194,8 @@
       "ssh_port": "22",
 
       "oobm_port": "2323",
+
+      "ansible_roles": "~/Development/ansible-roles",
 
       "http_proxy": "{{env `http_proxy`}}",
       "https_proxy": "{{env `https_proxy`}}"

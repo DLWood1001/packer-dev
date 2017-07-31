@@ -1,3 +1,0 @@
-# Note(Dan): Variable prefix fn_ = fix networking.
-fn_interface: eth0
-fn_device_timeout: 600

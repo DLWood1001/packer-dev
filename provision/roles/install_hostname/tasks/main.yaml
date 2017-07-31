@@ -1,3 +1,0 @@
-- name: Set Hostname
-  hostname:
-    name: "{{hn_name}}"

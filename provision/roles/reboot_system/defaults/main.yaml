@@ -1,6 +1,0 @@
-rs_defaults:
-  user: "{{ansible_user|d('')}}"
-  port: 22
-  count: 1
-
-rs: "{{rs_defaults|combine(reboot_system|d({}))}}"

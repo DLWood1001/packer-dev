@@ -1,3 +1,0 @@
-- name: Set Admin Group - RedHat Family
-  set_fact:
-    admin_group: wheel
