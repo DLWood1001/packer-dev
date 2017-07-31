@@ -150,6 +150,8 @@
          "type": "ansible",
          "playbook_file": "./provision/pb_install_roles.yaml",
          "extra_arguments": [
+            "--extra-vars", "name={{user `name`}}",
+
             "--extra-vars", "target={{user `target`}}",
             "--extra-vars", "media={{user `media`}}",
 
