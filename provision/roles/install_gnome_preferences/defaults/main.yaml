@@ -1,0 +1,19 @@
+# Gnome Extension Variables
+# -------------------------
+gp_media: "{{media|default('remote')}}"
+gp_base: org.gnome.shell
+gp_key: enabled-extensions
+gp_extension_name_suffix: gnome-shell-extensions.gcampax.github.com
+gp_extension_package_prefix: gnome-shell-extension
+gp_extensions:
+  - apps-menu
+  - window-list
+  - places-menu
+  - alternate-tab
+  - launch-new-instance
+  - top-icons
+
+
+# Gnome Desktop Variables
+# -----------------------
+gd_base: org.gnome.desktop

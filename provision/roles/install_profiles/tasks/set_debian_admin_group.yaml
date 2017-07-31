@@ -1,0 +1,3 @@
+- name: Set Admin Group - Debian Family
+  set_fact:
+    admin_group: sudo

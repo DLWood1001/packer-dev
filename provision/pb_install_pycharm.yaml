@@ -83,7 +83,7 @@
 
     - name: Install PyCharm Desktop File
       template:
-        src: jetbrains-pycharm-ce.desktop.j2
+        src: ./pycharm/jetbrains-pycharm-ce.desktop.j2
         dest: "/usr/share/applications/jetbrains-pycharm-ce.desktop"
         mode: 0644
 

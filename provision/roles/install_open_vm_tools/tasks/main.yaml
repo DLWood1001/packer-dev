@@ -1,0 +1,26 @@
+- name: Test if the provider is supported.
+  meta: end_play
+  when: ovmt_provider != 'vmware'
+
+- name: Set | Set local repo
+  set_fact:
+    ovmt_enable_repos: "local-repo"
+    ovmt_disable_repos: "*"
+  when: ovmt_media == "local"
+
+- name: Gather facts on the system.
+  setup:
+
+- name: Install Dependencies.
+  package:
+    name: "{{item}}"
+    enablerepo: "{{ovmt_enable_repos|default(omit)}}"
+    disablerepo: "{{ovmt_disable_repos|default(omit)}}"
+    state: present
+  with_items: "{{ovmt_dependencies[ovmt_target]}}"
+
+- name: Start Open VM Tools
+  service:
+    name: vmtoolsd
+    state: started
+    enabled: yes

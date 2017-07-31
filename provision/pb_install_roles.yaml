@@ -1,0 +1,54 @@
+---
+- name: Install System Roles
+  hosts: "{{hosts|d(host|d('all'))}}"
+  gather_facts: yes
+
+  vars_files:
+    - vf_settings.yaml
+
+  # Note (Dan): All variables prefixed with ir_ (Install Roles).
+  vars:
+    ir_media: "{{media|default('remote')}}"
+    ir_provider: "{{provider|default(ansible_virtualization_type|d())}}"
+    ir_target: "{{target|default('multi-user')}}"
+
+  environment:
+    http_proxy: "{{http_proxy|default(None)}}"
+    https_proxy: "{{https_proxy|default(None)}}"
+
+  roles:
+    - role: optimize_sshd
+
+    - role: optimize_networking
+      when:
+        - ansible_os_family == "RedHat"
+
+    # Note (Dan): Yum = RedHat/Centos
+    # Note (Dan): Yum will be replaced in versions greater than 7.x.
+    - role: optimize_yum
+      when:
+        - ansible_os_family == "RedHat"
+        - ansible_distribution_major_version <= 7
+
+    - role: install_local_repo
+      when:
+        - ansible_distribution == "CentOS"
+        - ir_media == "local"
+
+
+    - role: install_profiles
+
+    - role: install_virtualbox_guest_additions
+      when:
+        - ir_provider == 'virtualbox'
+
+    - role: install_open_vm_tools
+      when:
+        - ir_provider == 'vmware'
+
+    - role: install_gnome_preferences
+      when:
+        - ir_target == 'graphical'
+
+    - role: optimize_grub
+    - role: optimize_clean_up

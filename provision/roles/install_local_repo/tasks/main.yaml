@@ -1,0 +1,18 @@
+- name: Install CentOS Local Repository
+  yum_repository:
+    name: "{{lr_name}}"
+    description: CentOS Local Repository
+    baseurl: "file:///mnt/{{lr_name}}"
+    gpgkey: "file:///mnt/{{lr_name}}/RPM-GPG-KEY-CentOS-7"
+    enabled: false
+    gpgcheck: true
+    state: present
+
+- name: Create mount point folder.
+  file:
+    path: "/mnt/{{lr_name}}"
+    state: directory
+
+- name: Mount | Mount CentOS Local CD
+  command: "mount -t iso9660 {{lr_dev}} /mnt/{{lr_name}}"
+

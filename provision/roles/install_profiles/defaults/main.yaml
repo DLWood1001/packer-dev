@@ -1,0 +1,8 @@
+defaults:
+  profile:
+    shell: /bin/bash
+    skeleton: /etc/skel
+    admin: false
+    vagrant: false
+
+vagrant_public_key: "https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant.pub"

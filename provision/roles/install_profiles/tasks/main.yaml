@@ -1,0 +1,129 @@
+# Initialize
+# ----------
+- name: Determine System Facts
+  setup:
+
+# Note (Dan): Allows me to kill off some default({}) and d({}) parameters.
+- name: Initialize Variables
+  set_fact:
+    profiles: {}
+  when:
+    - profiles is not defined
+
+
+# Normalize
+# ---------
+- name: Normalize Defaults
+  set_fact:
+    profiles: >-
+      {%- set result = {} -%}
+      {%- for k, v in profiles.items() -%}
+        {%- set v = defaults['profile']|combine(v|d({})) -%}
+
+        {%- set _ = result.update({k: v}) -%}
+      {%- endfor -%}
+      {{- result -}}
+
+- name: Build Normalized Passwords
+  set_fact:
+    profiles: >-
+      {%- set result = {} -%}
+      {%- for k, v in profiles.items() -%}
+        {%- if v.password is defined -%}
+          {%- set sha512  =  v.password|password_hash('sha512') -%}
+          {%- set _ = v.update({'sha512': sha512}) -%}
+
+        {%- endif -%}
+
+        {%- set _ = result.update({k: v}) -%}
+      {%- endfor -%}
+      {{- result -}}
+
+- name: Normalize Vagrant Users
+  set_fact:
+    profiles: >-
+      {%- set result = {} -%}
+      {%- for k, v in profiles.items() -%}
+        {%- if v.vagrant -%}
+          {%- set _ = v.update({'admin': true}) -%}
+
+        {%- endif -%}
+
+        {%- set _ = result.update({k: v}) -%}
+      {%- endfor -%}
+      {{- result -}}
+
+
+# Admin Group
+# -----------
+- name: Set Admin Profile Group
+  include: "set_{{ansible_os_family|lower}}_admin_group.yaml"
+
+- name: Build Admin Profile Groups
+  set_fact:
+    profiles: >-
+      {%- set result = {} -%}
+      {%- for k, v in profiles.items() -%}
+        {%- if v.admin|d(false) -%}
+          {%- set groups = v.groups|d([]) + [admin_group] -%}
+
+          {%- set _ = v.update({'groups': groups}) -%}
+        {%- endif -%}
+
+        {%- set _ = result.update({k: v}) -%}
+      {%- endfor -%}
+      {{- result -}}
+
+
+# User Setup
+# ----------
+- name: Create User Group
+  group:
+    name: "{{profiles[item].group}}"
+    gid: "{{profiles[item].gid|default(omit)}}"
+    state: present
+  when: profiles[item].group is defined
+  with_items: "{{profiles}}"
+
+- name: "Create User Profile"
+  user:
+    name: "{{profiles[item].name|default(item)}}"
+    uid: "{{profiles[item].uid|default(omit)}}"
+    comment: "{{profiles[item].comment|default(omit)}}"
+    group: "{{profiles[item].group|default(omit)}}"
+    groups: "{{profiles[item].groups|default(omit)}}"
+    shell: "{{profiles[item].shell|default(omit)}}"
+    skeleton: "{{profiles[item].skeleton|default(omit)}}"
+    password: "{{profiles[item].sha512|default(omit)}}"
+    state: present
+  with_items: "{{profiles}}"
+
+- name: Install Public Key
+  authorized_key:
+    user: "{{profiles[item].name|default(item)}}"
+    state: present
+    key: "{{profiles[item].public_key}}"
+    validate_certs: no
+  when: profiles[item].public_key is defined
+  with_items: "{{profiles}}"
+
+
+# Vagrant
+# -------
+- name: Install Vagrant Profile Sudo Overrides
+  template:
+    src: "{{role_path}}/files/vagrant.sudoers.j2"
+    dest: "/etc/sudoers.d/{{profiles[item].name|default(item)}}"
+    mode: 0400
+  when: profiles[item].vagrant|default(false) == true
+  with_items: "{{profiles}}"
+
+- name: Install Vagrant Public Key
+  authorized_key:
+    user: "{{profiles[item].name|default(item)}}"
+    key: "{{vagrant_public_key}}"
+    validate_certs: no
+    state: present
+  when: profiles[item].vagrant|default(false) == true
+  with_items: "{{profiles}}"
+
