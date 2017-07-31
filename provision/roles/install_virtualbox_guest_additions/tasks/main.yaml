@@ -1,7 +1,7 @@
 - name: Validate | Test if the target is graphical.
   set_fact:
     vbox_nox11: '--nox11'
-  when: vbox_target != 'graphical'
+  when: vbox_target != 'desktop'
 
 - name: Set | Set local repo
   set_fact:
@@ -17,6 +17,9 @@
 - name: Set | Kernel Version Data
   set_fact:
     kernel_version: "{{kernel_version_output.stdout}}"
+
+- name: Set | Include Dependencies Variables
+  include_vars: "{{role_path}}/defaults/vbox_{{ansible_os_family|lower}}_dependencies.yaml"
 
 - name: Install | Install Dependencies.
   package:

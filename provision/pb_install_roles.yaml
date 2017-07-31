@@ -36,6 +36,7 @@
         - ir_media == "local"
 
 
+    - role: install_hostname
     - role: install_profiles
 
     - role: install_virtualbox_guest_additions
@@ -48,7 +49,7 @@
 
     - role: install_gnome_preferences
       when:
-        - ir_target == 'graphical'
+        - ir_target == 'desktop'
 
     - role: optimize_grub
     - role: optimize_clean_up

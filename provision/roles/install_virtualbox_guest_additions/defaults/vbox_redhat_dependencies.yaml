@@ -1,0 +1,14 @@
+vbox_dependencies:
+  - binutils
+  - make
+  - perl
+  - bzip2
+  - gcc
+  - cpp
+  - "kernel-devel-{{kernel_version}}"
+  - "kernel-headers-{{kernel_version}}"
+  - glibc-devel
+  - glibc-headers
+  - libmpc
+  - mpfr
+

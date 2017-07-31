@@ -2,7 +2,7 @@
 # ------------------------
 - name: Validate | Test if the target is graphical.
   meta: end_play
-  when: target|default('multi-user') != 'graphical'
+  when: target|default('server') != 'desktop'
 
 - name: Set | Set local repo
   set_fact:

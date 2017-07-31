@@ -1,3 +1,5 @@
+hostname: "{{name|default('localhost')}}.local"
+
 profiles:
   admin:
     name: admin
