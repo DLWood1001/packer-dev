@@ -234,6 +234,7 @@
    "post-processors": [
       {
         "type": "vagrant",
+        "except": ["{{user `os_name`}}-{{user `os_version`}}-esxi"],
         "output": "staging/{{.Provider}}/box/{{user `os_name`}}-{{user `os_version`}}.box",
         "keep_input_artifact": true,
         "vagrantfile_template": "./templates/vagrantfile-{{user `os_name`}}-{{user `os_version`}}"
