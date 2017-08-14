@@ -1,0 +1,33 @@
+{
+   "packer_providers": "virtualbox",
+   "packer_vagrant": "false",
+
+   "product_name": "centos_minimal_plus",
+   "product_version": "7.3",
+
+   "os_name": "centos",
+   "os_version": "7.3",
+   "os_target": "server",
+   
+   "iso_file": "CentOS-7-x86_64-DVD-1611.iso",
+   "iso_path": "http://mirrors.kernel.org/centos/7.3.1611/isos/x86_64",
+   "iso_checksum_sha256_hash": "c455ee948e872ad2194bdddd39045b83634e8613249182b88f549bb2319d97eb",
+   
+   "esxi_username": "",
+   "esxi_password": "",
+   "esxi_host": "",
+   "esxi_datastore": "",
+   "esxi_network": "",
+   
+   "cpus": "4",
+   "memory": "4096",
+   "headless": "false",
+   
+   "ssh_username": "root",
+   "ssh_password": "password",
+   "ssh_port": "22",
+   
+   "oobm_port": "2323",
+   
+   "ansible_roles": "~/Development/ansible-roles"
+}

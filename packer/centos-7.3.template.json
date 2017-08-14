@@ -1,7 +1,7 @@
 {
    "builders": [
       {
-         "name": "{{user `name`}}-{{user `version`}}-virtualbox",
+         "name": "{{user `os_name`}}-{{user `os_version`}}-virtualbox",
          "type": "virtualbox-iso",
 
          "iso_url": "{{user `iso_path`}}/{{user `iso_file`}}",
@@ -37,24 +37,25 @@
             "quiet ",
             "biosdevname=0 ",
             "net.ifnames=0 ",
-            "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `name`}}-{{user `version`}}-{{user `target`}}.cfg",
+            "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `os_name`}}-{{user `os_version`}}-{{user `os_target`}}.cfg",
             "<enter>"
          ],
 
          "post_shutdown_delay": "30s",
-         "shutdown_command": "echo 'password' | sudo -S shutdown -h now",
+         "shutdown_command": "echo '{{user `ssh_password`}}' | sudo -S shutdown -h now",
 
          "format": "ova",
-         "vm_name": "{{user `name`}}-{{user `version`}}-{{user `target`}}-virtualbox",
-         "output_directory": "builds/ova",
+         "vm_name": "{{user `os_name`}}-{{user `os_version`}}-{{user `os_target`}}-virtualbox",
+         "output_directory": "staging/virtualbox/ova",
 
+         "ssh_pty": true,
          "ssh_username": "{{user `ssh_username`}}",
          "ssh_password": "{{user `ssh_password`}}",
          "ssh_port": "{{user `ssh_port`}}",
          "ssh_wait_timeout": "25m"
       },
       {
-         "name": "{{user `name`}}-{{user `version`}}-libvirt",
+         "name": "{{user `os_name`}}-{{user `os_version`}}-qemu",
          "type": "qemu",
 
          "iso_url": "{{user `iso_path`}}/{{user `iso_file`}}",
@@ -77,14 +78,14 @@
             "quiet ",
             "biosdevname=0 ",
             "net.ifnames=0 ",
-            "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `name`}}-{{user `version`}}-{{user `target`}}.cfg",
+            "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `os_name`}}-{{user `os_version`}}-{{user `os_target`}}.cfg",
             "<enter>"
          ],
 
          "shutdown_command": "echo '{{user `ssh_password`}}' | sudo -S shutdown -h now",
 
-         "vm_name": "{{user `name`}}-{{user `version`}}-{{user `target`}}-libvirt",
-         "output_directory": "builds/ova",
+         "vm_name": "{{user `os_name`}}-{{user `os_version`}}-{{user `os_target`}}-qemu",
+         "output_directory": "staging/qemu/ova",
 
          "ssh_username": "{{user `ssh_username`}}",
          "ssh_password": "{{user `ssh_password`}}",
@@ -92,7 +93,7 @@
          "ssh_wait_timeout": "25m"
       },
       {
-         "name": "{{user `name`}}-{{user `version`}}-vmware",
+         "name": "{{user `os_name`}}-{{user `os_version`}}-vmware",
          "type": "vmware-iso",
 
          "iso_url": "{{user `iso_path`}}/{{user `iso_file`}}",
@@ -128,32 +129,93 @@
             "quiet ",
             "biosdevname=0 ",
             "net.ifnames=0 ",
-            "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `name`}}-{{user `version`}}-{{user `target`}}.cfg",
+            "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `os_name`}}-{{user `os_version`}}-{{user `os_target`}}.cfg",
             "<enter>"
          ],
 
-         "shutdown_command": "echo 'password' | sudo -S shutdown -h now",
+         "shutdown_command": "echo '{{user `ssh_password`}}' | sudo -S shutdown -h now",
 
-         "vm_name": "{{user `name`}}-{{user `version`}}-{{user `target`}}-vmware",
-         "vmdk_name": "{{user `name`}}-{{user `version`}}-{{user `target`}}-vmware",
-         "output_directory": "builds/vmx/{{user `name`}}-{{user `version`}}-{{user `target`}}-vmware",
+         "vm_name": "{{user `os_name`}}-{{user `os_version`}}-{{user `os_target`}}-vmware",
+         "vmdk_name": "{{user `os_name`}}-{{user `os_version`}}-{{user `os_target`}}-vmware",
+         "output_directory": "staging/vmware/vmx/{{user `os_name`}}-{{user `os_version`}}-{{user `os_target`}}-vmware",
 
          "ssh_username": "{{user `ssh_username`}}",
          "ssh_password": "{{user `ssh_password`}}",
          "ssh_port": "{{user `ssh_port`}}",
          "ssh_wait_timeout": "25m"
+      },
+      {
+         "name": "{{user `os_name`}}-{{user `os_version`}}-esxi",
+         "type": "vmware-iso",
+
+         "iso_url": "{{user `iso_path`}}/{{user `iso_file`}}",
+         "iso_checksum_type": "none",
+         "iso_checksum": "{{user `iso_checksum_sha256_hash`}}",
+
+         "remote_type": "esx5",
+         "remote_username": "{{user `esxi_username`}}",
+         "remote_password": "{{user `esxi_password`}}",
+         "remote_host": "{{user `esxi_host`}}",
+         "remote_datastore": "{{user `esxi_datastore`}}",
+
+         "tools_upload_flavor": "linux",
+         "tools_upload_path": "{{.Flavor}}.iso",
+
+         "headless": "{{user `headless`}}",
+         "guest_os_type": "centos-64",
+         "disk_type_id": "zeroedthick", 
+         "vmx_data": {
+            "numvcpus": "{{user `cpus`}}",
+            "memsize": "{{user `memory`}}",
+
+            "scsi0.present": "TRUE",
+            "scsi0.virtualDev": "pvscsi",
+
+            "ethernet0.present": "TRUE",
+            "ethernet0.virtualDev": "vmxnet3",
+
+            "ethernet0.networkName": "{{user `esxi_network`}}"
+         },
+         "vmx_data_post": {
+
+         },
+
+         "http_directory": "kickstart",
+         "boot_wait": "5s",
+         "boot_command": [
+            "<tab>",
+            "<leftCtrlOn>ww<leftCtrlOff>",
+            "quiet ",
+            "biosdevname=0 ",
+            "net.ifnames=0 ",
+            "ks=http://{{.HTTPIP}}:{{.HTTPPort}}/{{user `os_name`}}-{{user `os_version`}}-{{user `os_target`}}.cfg",
+            "<enter>"
+         ],
+
+         "shutdown_command": "echo '{{user `ssh_password`}}' | sudo -S shutdown -h now",
+
+         "format": "ova",
+         "vm_name": "{{user `os_name`}}-{{user `os_version`}}",
+         "vmdk_name": "{{user `os_name`}}-{{user `os_version`}}",
+         "output_directory": "staging/esxi/ova",
+
+         "ssh_username": "{{user `ssh_username`}}",
+         "ssh_password": "{{user `ssh_password`}}",
+         "ssh_port": "{{user `ssh_port`}}",
+         "ssh_wait_timeout": "25m",
+
+         "vnc_disable_password": true
       }
    ],
 
    "provisioners": [
       {
          "type": "ansible",
-         "playbook_file": "./provision/pb_install_roles.yaml",
+         "playbook_file": "./provisioners/pb_install_roles.yaml",
          "extra_arguments": [
-            "--extra-vars", "name={{user `name`}}",
+            "--extra-vars", "name={{user `os_name`}}",
 
-            "--extra-vars", "target={{user `target`}}",
-            "--extra-vars", "media={{user `media`}}",
+            "--extra-vars", "target={{user `os_target`}}",
 
             "--extra-vars", "oobm_port={{user `oobm_port`}}",
 
@@ -169,35 +231,15 @@
    "post-processors": [
       {
         "type": "vagrant",
-        "output": "builds/box/{{user `name`}}-{{user `version`}}-{{user `target`}}-{{.Provider}}.box",
+        "output": "staging/{{.Provider}}/box/{{user `os_name`}}-{{user `os_version`}}.box",
         "keep_input_artifact": true,
-        "vagrantfile_template": "./templates/vagrantfile-{{user `name`}}-{{user `version`}}"
+        "vagrantfile_template": "./templates/vagrantfile-{{user `os_name`}}-{{user `os_version`}}"
       }
    ],
-
+  
    "variables": {
-      "name": "centos",
-      "version": "7.3",
-      "target": "server",
-      "media": "local",
-
-      "iso_file": "CentOS-7-x86_64-DVD-1611.iso",
-      "iso_path": "http://mirrors.kernel.org/centos/7.3.1611/isos/x86_64",
-      "iso_checksum_sha256_hash": "c455ee948e872ad2194bdddd39045b83634e8613249182b88f549bb2319d97eb",
-
-      "cpus": "4",
-      "memory": "4096",
-      "headless": "false",
-
-      "ssh_username": "root",
-      "ssh_password": "password",
-      "ssh_port": "22",
-
-      "oobm_port": "2323",
-
-      "ansible_roles": "~/Development/ansible-roles",
-
       "http_proxy": "{{env `http_proxy`}}",
       "https_proxy": "{{env `https_proxy`}}"
    }
 }
+
