@@ -13,11 +13,11 @@
    "iso_path": "http://archive.kernel.org/centos-vault/7.2.1511/isos/x86_64",
    "iso_checksum_sha256_hash": "907e5755f824c5848b9c8efbb484f3cd945e93faa024bad6ba875226f9683b16",
    
-   "esxi_username": "",
-   "esxi_password": "",
-   "esxi_host": "",
-   "esxi_datastore": "",
-   "esxi_network": "",
+   "esxi_username": "root",
+   "esxi_password": "2!HPAdmin",
+   "esxi_host": "15.112.114.6",
+   "esxi_datastore": "Local2",
+   "esxi_network": "Corp",
    
    "cpus": "4",
    "memory": "4096",
