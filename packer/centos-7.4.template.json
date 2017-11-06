@@ -65,12 +65,14 @@
          "headless": "{{user `headless`}}",
          "accelerator": "kvm",
          "net_device": "virtio-net",
+         "disk_interface": "virtio",
+         "disk_cache": "none",
          "qemuargs": [
             ["-smp", "{{user `cpus`}},sockets={{user `cpus`}},cores=1,threads=1"],
             ["-m", "{{user `memory`}}M"]
          ],
 
-         "http_directory": "kickstart",
+         "http_directory": "httpd/kickstart",
          "boot_wait": "5s",
          "boot_command": [
             "<tab>",
@@ -231,7 +233,8 @@
    "post-processors": [
       {
         "type": "vagrant",
-        "output": "staging/{{.Provider}}/box/{{user `os_name`}}-{{user `os_version`}}.box",
+        "only": [],
+        "output": "staging/{{.Provider}}/box/{{user `os_name`}}-{{user `os_version`}}-{{user `os_target`}}.box",
         "keep_input_artifact": true,
         "vagrantfile_template": "./templates/vagrantfile-{{user `os_name`}}-{{user `os_version`}}"
       }
