@@ -30,9 +30,9 @@ Vagrant.configure("2") do |config|
      create: true,
      disabled: false
 
-  config.vm.network :private_network,
-     virtualbox__intnet: "fm_test_lan",
-     ip: "172.16.0.10"
+  # config.vm.network :private_network,
+  #    virtualbox__intnet: "fm_test_lan",
+  #    ip: "172.16.0.10"
 
   # Default Provider Overrides
   # --------------------------
@@ -71,7 +71,9 @@ Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt_config|
     # General Provider Settings
     # -------------------------
+    libvirt_config.driver = 'kvm'
     libvirt_config.cpus = provider_cpus
+    libvirt_config.cpu_mode = 'host-model'
     libvirt_config.memory = provider_memory 
 
     # Custom Provider Settings
@@ -81,6 +83,13 @@ Vagrant.configure("2") do |config|
     libvirt_config.graphics_type = "spice"
     libvirt_config.graphics_autoport = "yes"
     libvirt_config.video_type = "qxl"
+
+    # Storage Settings
+    libvirt_config.disk_bus = 'virtio'
+    libvirt_config.volume_cache = 'none'
+
+    # NIC Settings
+    libvirt_config.nic_model_type = 'virtio'
 
     # Communication Channels
     # Note(Dan): This allows for display reszing.

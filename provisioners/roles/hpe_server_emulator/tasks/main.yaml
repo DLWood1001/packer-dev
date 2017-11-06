@@ -1,0 +1,78 @@
+- name: Install Requirements
+  yum:
+    name: "{{item}}"
+    state: present
+  with_items:
+    - git
+    - lldpd
+    - vim
+
+- name: Clone pyroute2 github repository
+  git:
+    repo: https://github.com/svinota/pyroute2
+    dest: /tmp/pyroute2
+    clone: True
+
+- name: Install mac_address module
+  copy:
+    src: "{{role_path}}/files/mac_address.py"
+    dest: "/usr/lib/python2.7/site-packages/mac_address.py"
+
+- name: Install pyroute2 module
+  shell: /usr/bin/python setup.py install
+  args:
+    chdir: /tmp/pyroute2
+
+- name: Build python .pyc byte code for new modules
+  shell: |
+    /usr/bin/python -c 'import pyroute2'
+    /usr/bin/python -c 'import mac_address'
+
+- name: Copy hpe_server_emulator script to host
+  copy:
+    src: "{{role_path}}/files/hpe_server_emulator"
+    dest: "/opt/hpe_server_emulator/hpe_server_emulator"
+    mode: 0755
+
+- name:
+  pause:
+    minutes: 5
+
+- name: Copy hpe_server_emulator service to host
+  copy:
+    src: "{{role_path}}/files/hpe_server_emulator.service"
+    dest: "/etc/systemd/system/hpe_server_emulator.service"
+
+- name: Reload systemd configs
+  shell: systemctl daemon-reload
+
+- name: Enable hpe_server_emulator service
+  service:
+    name: hpe_server_emulator
+    enabled: True
+
+- name: Copy udev rule for ma1 interface
+  copy:
+    src: "{{role_path}}/files/71-ma-interface.rules"
+    dest: "/etc/udev/rules.d/71-ma-interface.rules"
+
+- name: Delete old eth0 ifcfg-eth0 file
+  file:
+    path: "/etc/sysconfig/network-scripts/ifcfg-eth0"
+    state: absent
+
+- name: Copy new ma1 ifcfg-ma1 file to host
+  copy:
+    src: "{{role_path}}/files/ifcfg-ma1"
+    dest: "/etc/sysconfig/network-scripts/ifcfg-ma1"
+
+- name: Copy bonding kernel module config to modprobe.d
+  copy:
+    src: "{{role_path}}/files/bonding.conf"
+    dest: "/etc/modprobe.d/bonding.conf"
+
+- name: Enable lldpd service
+  service:
+    name: lldpd
+    enabled: True
+

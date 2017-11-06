@@ -1,0 +1,229 @@
+#!/usr/bin/env python
+
+# -*- mode: python -*-
+# vi: set ft=python ts=2 sw=2 sts=2 et :
+
+# Includes
+# --------
+
+# External Includes
+import pyroute2
+
+# Custom Includes
+import mac_address
+
+# Default Includes
+import os
+import re
+import json 
+# import jinja2
+import subprocess
+import socket
+
+# Constants
+# ---------
+interface_path = '/sys/class/net'
+network_scripts_path = '/etc/sysconfig/network-scripts'
+log_fqfile = '/var/log/hpe_server_emulator.log'
+
+nic_id_offset = 24
+
+mask_server = mac_address.MAC_Address('ff:ff:ff:ff:00:00')
+mask_link = mac_address.MAC_Address('ff:ff:00:ff:ff:ff')
+
+
+# Initialize
+# ----------
+ma_address_file = '/'.join([interface_path, 'ma1', 'address'])
+with open(ma_address_file, 'r') as handle:
+  ma_address = mac_address.MAC_Address(handle.read().replace('\n', ''))
+
+interfaces = [
+  d for d in os.listdir(interface_path) if re.match('^eth[0-9]+$', d)
+]
+
+# Build Servers Data Structure
+servers = dict()
+for interface in interfaces: 
+
+  # Get hardware address
+  address_file = '/'.join([interface_path, interface, 'address'])
+  with open(address_file, 'r') as handle:
+    address = mac_address.MAC_Address(handle.read().replace('\n', ''))
+  
+  # Get IDs
+  server_id = int(address & (~mask_server))
+  nic_id = int((address & (~mask_link)) >> nic_id_offset)
+
+  # Add Server dict
+  server = '{:04x}'.format(int(server_id))
+  if server not in servers:
+    servers[server] = dict()
+ 
+  # ILO Data Structure
+  # ------------------
+  if 'ilo' not in servers[server]:
+    servers[server]['ilo'] = dict()
+
+  servers[server]['ilo']['interface'] = 'ilo{}'.format(server_id)
+  servers[server]['ilo']['address'] = str(ma_address + server_id)
+  
+  # NICs Data Structure
+  # -------------------
+
+  # Add NICs list
+  if 'nics' not in servers[server]:
+    servers[server]['nics'] = list()
+
+  # Expand NICs list size as needed.
+  size = nic_id + 1
+  if len(servers[server]['nics']) < size:
+    servers[server]['nics'] += [None] * (size - len(servers[server]['nics']))
+
+  if servers[server]['nics'][nic_id] == None:
+    servers[server]['nics'][nic_id] = dict()
+
+  nic = servers[server]['nics'][nic_id]
+
+  nic['address'] = str(address)
+  nic['interface'] = interface
+
+
+  # Bond Data Structure
+  # -------------------
+
+  # Note (Dan): This is only computed once, based on the first discovered NIC
+  #             per server.
+  if 'bond' not in servers[server]:
+    servers[server]['bond'] = dict()
+
+    bond = servers[server]['bond']
+    bond['address'] = str((address & mask_link) + (0xff << nic_id_offset))
+
+
+# Execute
+# -------
+
+ip = pyroute2.IPRoute()
+
+# Kill the bond0 interface that gets created when loading the kernel driver.
+bond_interface = 'bond0'
+if ip.link_lookup(ifname=bond_interface):
+  ip.link('del', index=ip.link_lookup(ifname=bond_interface)[0])
+
+cmd_dhcp_ilo = [
+  '/sbin/dhclient',
+  '-q',
+  '-lf',
+  'ilo_lease_file',
+  '-pf',
+  'ilo_pid_file',
+  '-H',
+  'centos',
+  '-R',
+  'subnet-mask,broadcast-address,time-offset,domain-search,domain-name,domain-name-servers,host-name,nis-domain,nis-servers,ntp-servers,interface-mtu',
+  'ilo_interface'
+]
+
+ma_index = ip.link_lookup(ifname='ma1')[0]
+for (server_id, server_data) in servers.items():
+  ilo_interface = server_data['ilo']['interface']
+  ilo_address = server_data['ilo']['address']
+  
+  # Create iLO Interfaces
+  if not ip.link_lookup(ifname=ilo_interface):
+    ip.link(
+      'add',
+      ifname=ilo_interface,
+      kind='macvtap',
+      link=ma_index,
+      macvtap_mode='bridge',
+      address=ilo_address,
+      state='up'
+    )
+
+  # Assign Address to iLO Interfaces
+  ilo_index = ip.link_lookup(ifname=ilo_interface)[0]
+  if not ip.get_addr(index=ilo_index, family=socket.AF_INET):
+    cmd = list(cmd_dhcp_ilo)
+
+    ilo_lease_file = '/var/lib/dhclient/dhclient--{}.lease'.format(ilo_interface)
+    ilo_pid_file = '/var/run/dhclient-{}.pid'.format(ilo_interface)
+
+    cmd = [ilo_lease_file if p == 'ilo_lease_file' else p for p in cmd]
+    cmd = [ilo_pid_file if p == 'ilo_pid_file' else p for p in cmd]
+    cmd = [ilo_interface if p == 'ilo_interface' else p for p in cmd]
+
+    process = subprocess.Popen(
+      cmd,
+      stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE
+    )
+
+    cmd_stdout, cmd_stderr = process.communicate()
+
+    if process.returncode != 0:
+      with open(log_fqfile, 'wb') as handle:
+        handle.write(cmd_stdout)
+        handle.write(cmd_stderr)
+
+
+  # Create Server Bond Interface
+  server_name = 's{}'.format(server_id)
+  if not ip.link_lookup(ifname=server_name):
+    ip.link(
+      'add',
+      kind='bond',
+      ifname=server_name,
+      address=server_data['bond']['address']
+    )
+
+    server_index = ip.link_lookup(ifname=server_name)[0]
+
+    ip.link('set', index=server_index, state='up')
+
+  # Rename Server Uplinks
+  for (nic_id, nic_data) in enumerate(server_data['nics']):
+
+    # Skip Place holder interfaces
+    if not nic_data:
+      continue
+
+    server_index = ip.link_lookup(ifname=server_name)[0]
+    nic_index = ip.link_lookup(ifname=nic_data['interface'])[0]
+
+    nic_name = 's{}i{}'.format(server_id, nic_id)
+
+    ip.link('set', index=nic_index, state='down')
+
+    ip.link(
+      'set',
+      index=nic_index,
+      ifname=nic_name,
+      master=server_index,
+      address=nic_data['address']
+    )
+
+    ip.link('set', index=nic_index, state='up')
+
+    nic_data['interface'] = nic_name
+
+# print json.dumps(servers, indent=2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

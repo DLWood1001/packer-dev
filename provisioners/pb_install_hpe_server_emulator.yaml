@@ -45,6 +45,8 @@
     - role: install_profiles
     - role: install_virtualbox_guest_additions
     - role: install_open_vm_tools
-    - role: install_gnome_preferences
+    # - role: install_gnome_preferences
+    - role: install_epel
+    - role: hpe_server_emulator
     - role: optimize_grub
     - role: optimize_clean_up

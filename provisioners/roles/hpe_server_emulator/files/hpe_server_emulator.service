@@ -1,0 +1,10 @@
+[Unit]
+Description=Whitney Server & iLO Emulator
+Wants=network-online.target
+After=network.target network-online.target
+
+[Service]
+ExecStart=/opt/hpe_server_emulator/hpe_server_emulator
+
+[Install]
+WantedBy=multi-user.target

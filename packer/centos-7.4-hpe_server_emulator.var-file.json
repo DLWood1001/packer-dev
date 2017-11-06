@@ -1,0 +1,33 @@
+{
+   "packer_providers": "qemu",
+   "packer_vagrant": "false",
+
+   "product_name": "centos",
+   "product_version": "7.4",
+
+   "os_name": "centos",
+   "os_version": "7.4",
+   "os_target": "server",
+   
+   "iso_file": "CentOS-7-x86_64-DVD-1708.iso",
+   "iso_path": "http://mirrors.kernel.org/centos/7.4.1708/isos/x86_64",
+   "iso_checksum_sha256_hash": "ec7500d4b006702af6af023b1f8f1b890b6c7ee54400bb98cef968b883cd6546",
+   
+   "esxi_username": "",
+   "esxi_password": "",
+   "esxi_host": "",
+   "esxi_datastore": "",
+   "esxi_network": "",
+   
+   "cpus": "4",
+   "memory": "4096",
+   "headless": "false",
+   
+   "ssh_username": "root",
+   "ssh_password": "password",
+   "ssh_port": "22",
+   
+   "oobm_port": "2323",
+   
+   "ansible_roles": "~/Development/ansible-roles"
+}
